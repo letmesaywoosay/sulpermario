@@ -112,7 +112,8 @@
 
         // --- Gemini API 연동 헬퍼 함수 ---
         const generateGeminiContent = async (prompt, customKey) => {
-            // 시스템 환경(Canvas)에서는 빈 문자열 상태로 자동 주입됩니다.
+            // 💡 배포 시 아래 apiKey 변수 자리에 발급받은 Gemini API 키("AIzaSy...")를 입력해두면
+            // 모든 접속 유저가 개별 키 설정 없이 AI 시음기/안주추천/검색 기능을 즉시 사용할 수 있습니다!
             const apiKey = ""; 
             
             // 시스템 키가 주입되었다면 우선 사용 (미리보기 화면), 없으면 사용자가 입력한 로컬 키 사용 (메모장/직접 실행 시)
@@ -155,10 +156,18 @@
         let db = null;
 
         const getStoredFirebaseConfig = () => {
+            // 💡 배포 시 아래 HARDCODED_CONFIG 변수 자리에 Firebase 설정을 객체 형태로 입력해두면
+            // (예: const HARDCODED_CONFIG = { apiKey: "...", authDomain: "...", projectId: "...", ... })
+            // 유저들이 설정창을 열어 직접 입력하지 않아도 즉시 실시간 클라우드 연동이 시작됩니다!
+            const HARDCODED_CONFIG = {
+              apiKey: "임시키",
+              projectId: "임시프로젝트"
+            };
+
             try {
                 const saved = localStorage.getItem('myWhiskeyFirebaseConfig');
-                return saved ? JSON.parse(saved) : null;
-            } catch(e) { return null; }
+                return saved ? JSON.parse(saved) : HARDCODED_CONFIG;
+            } catch(e) { return HARDCODED_CONFIG; }
         };
 
         const initializeFirebaseApp = (config) => {
@@ -2157,15 +2166,8 @@
                                 )
                             ) : null}
 
-                            <button onClick={() => { playMarioSound('coin'); setFirebaseConfigModal(true); }} className={`px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 border rounded-lg shadow transition-colors bg-gray-800/80 border-gray-650 text-gray-300 hover:bg-gray-700`}>
-                                ☁️ {isFirebaseActive ? '클라우드 활성' : '클라우드 설정'}
-                            </button>
-
                             <button onClick={toggleMute} className="px-3 py-1.5 bg-gray-800/80 backdrop-blur-md text-gray-300 rounded-lg shadow hover:bg-gray-700 text-xs font-semibold flex items-center gap-1.5 border border-gray-600 transition-colors">
                                 {muted ? '🔇 소리 끔' : '🔊 소리 켬'}
-                            </button>
-                            <button onClick={() => setApiKeyModal({ isOpen: true, keyInput: localStorage.getItem('gemini_api_key') || '' })} className="px-3 py-1.5 bg-gray-800/80 backdrop-blur-md text-gray-300 rounded-lg shadow hover:bg-gray-700 text-xs font-semibold flex items-center gap-1.5 border border-gray-600 transition-colors">
-                                🔑 API 키 설정
                             </button>
                         </div>
                         
