@@ -1,0 +1,2756 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sul-per mario(Build up your whisky tastes)</title>
+    <!-- Tailwind CSS (디자인) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel (JSX 변환) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- SheetJS (엑셀/CSV 파일 읽기 라이브러리) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Firebase SDK (클라우드 연동) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-gray-950 text-gray-100 font-sans">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- 아이콘 컴포넌트들 ---
+        const Star = ({size=24, fill="none", className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
+        const Plus = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+        const Trash2 = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>;
+        const ListIcon = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>;
+        const LayoutGrid = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>;
+        const Edit2 = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>;
+        const SaveIcon = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>;
+        const XIcon = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+        const ChevronUp = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="18 15 12 9 6 15"/></svg>;
+        const ChevronDown = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="6 9 12 15 18 9"/></svg>;
+        const ChevronsUpDown = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="7 15 12 20 17 15"/><polyline points="7 9 12 4 17 9"/></svg>;
+        const UploadIcon = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>;
+        const ImageIcon = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>;
+        const SearchIcon = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
+        const PieChartIcon = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>;
+        const CameraIcon = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>;
+        const TableIcon = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>;
+        const ArrowUp = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>;
+        const GripVertical = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>;
+        const Sparkles = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
+
+        const TIERS = ['S', 'A', 'B', 'C', 'D', 'F'];
+        const WHISKEY_CATEGORIES = ['싱글몰트 스카치', '블렌디드 스카치', '켄터키 버번', '테네시 위스키', '라이 위스키', '재패니즈', '아이리시', '기타'];
+        const TIER_COLORS = { 'S': 'bg-yellow-500 text-yellow-900', 'A': 'bg-red-500 text-white', 'B': 'bg-orange-500 text-white', 'C': 'bg-amber-600 text-white', 'D': 'bg-green-600 text-white', 'F': 'bg-gray-600 text-white' };
+
+        // --- 업로드된 엑셀/CSV 데이터 기반 타일형 풍미 카테고리 정의 ---
+        const FLAVOR_CATEGORIES = [
+            {
+                category: '과일 계열', color: '#ef4444',
+                subCategories: [
+                    { name: '생과일', items: ['청사과', '빨간사과', '배', '포도', '복숭아', '살구', '감귤', '레몬', '오렌지'] },
+                    { name: '말린 과일', items: ['건포도', '건자두', '무화과', '대추', '데이트'] },
+                    { name: '열대과일', items: ['망고', '파인애플', '바나나', '코코넛'] }
+                ]
+            },
+            {
+                category: '달콤 계열', color: '#f59e0b',
+                subCategories: [
+                    { name: '스위트', items: ['바닐라', '꿀', '카라멜', '토피', '메이플 시럽', '흑설탕'] }
+                ]
+            },
+            {
+                category: '나무/오크 계열', color: '#84cc16',
+                subCategories: [
+                    { name: '우디', items: ['오크', '삼나무', '연필심', '나무껍질', '탄 나무'] }
+                ]
+            },
+            {
+                category: '스모키/피트 계열', color: '#8b5cf6',
+                subCategories: [
+                    { name: '피트', items: ['모닥불', '장작', '숯', '재', '연기', '소독약', '요오드'] }
+                ]
+            },
+            {
+                category: '바다/미네랄 계열', color: '#3b82f6',
+                subCategories: [
+                    { name: '해풍', items: ['짠맛', '바닷바람', '굴', '조개껍데기', '젖은 돌'] }
+                ]
+            },
+            {
+                category: '로스팅/다크 계열', color: '#57534e',
+                subCategories: [
+                    { name: '로스팅', items: ['커피', '에스프레소', '다크초콜릿', '카카오'] }
+                ]
+            },
+            {
+                category: '견과/곡물 계열', color: '#d97706',
+                subCategories: [
+                    { name: '고소함', items: ['아몬드', '헤이즐넛', '호두', '보리차', '비스킷', '식빵'] }
+                ]
+            },
+            {
+                category: '허브/식물 계열', color: '#10b981',
+                subCategories: [
+                    { name: '허브/향신료', items: ['민트', '풀내음', '유칼립투스', '홍차', '후추', '시나몬', '정향', '육두구'] }
+                ]
+            }
+        ];
+
+        // 가상 위스키 API 데이터베이스 (초기 화면용 예시)
+        const MOCK_API_DATA = [
+            { name: '맥캘란 12년 셰리오크', engName: 'Macallan 12 Sherry Oak', age: '12', type: '싱글몰트 스카치', flavor: '건포도' },
+            { name: '라가불린 16년', engName: 'Lagavulin 16', age: '16', type: '싱글몰트 스카치', flavor: '모닥불' },
+            { name: '와일드 터키 101', engName: 'Wild Turkey 101', age: 'NAS', type: '켄터키 버번', flavor: '바닐라' },
+            { name: '조니워커 블랙 라벨', engName: 'Johnnie Walker Black', age: '12', type: '블렌디드 스카치', flavor: '모닥불' },
+        ];
+
+        // --- Gemini API 연동 헬퍼 함수 ---
+        const generateGeminiContent = async (prompt, customKey) => {
+            // 시스템 환경(Canvas)에서는 빈 문자열 상태로 자동 주입됩니다.
+            const apiKey = ""; 
+            
+            // 시스템 키가 주입되었다면 우선 사용 (미리보기 화면), 없으면 사용자가 입력한 로컬 키 사용 (메모장/직접 실행 시)
+            const finalKey = apiKey || customKey;
+
+            if (!finalKey) {
+                // 키가 완전히 없는 상태면 예외를 발생시켜 입력 모달을 띄우도록 합니다.
+                throw new Error("API_KEY_MISSING");
+            }
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${finalKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }]
+            };
+
+            let retries = 5;
+            let delay = 1000;
+            
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error(`API 오류: ${response.status}`);
+                    const data = await response.json();
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+            }
+        };
+
+        // --- Firebase Initializer & Helpers ---
+        let firebaseApp = null;
+        let auth = null;
+        let db = null;
+
+        const getStoredFirebaseConfig = () => {
+            try {
+                const saved = localStorage.getItem('myWhiskeyFirebaseConfig');
+                return saved ? JSON.parse(saved) : null;
+            } catch(e) { return null; }
+        };
+
+        const initializeFirebaseApp = (config) => {
+            if (!config) return false;
+            try {
+                // If it is empty strings or default placeholder keys, don't initialize
+                if (!config.apiKey || config.apiKey.includes("YOUR_")) return false;
+                
+                if (firebase.apps.length === 0) {
+                    firebaseApp = firebase.initializeApp(config);
+                } else {
+                    firebaseApp = firebase.app();
+                }
+                auth = firebase.auth();
+                db = firebase.firestore();
+                return true;
+            } catch(e) {
+                console.error("Firebase Init Error:", e);
+                return false;
+            }
+        };
+
+        // Auto-boot if credentials exist
+        let isFirebaseActive = initializeFirebaseApp(getStoredFirebaseConfig());
+
+        // --- Retro 8-bit Audio Synthesizer (Web Audio API) ---
+        let isAudioMuted = false;
+        try {
+            const savedMute = localStorage.getItem('myWhiskeyMute');
+            if (savedMute !== null) {
+                isAudioMuted = JSON.parse(savedMute);
+            }
+        } catch(e) { console.warn(e); }
+
+        const playMarioSound = (type) => {
+            if (isAudioMuted) return;
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                
+                if (type === 'coin') {
+                    const now = ctx.currentTime;
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(987.77, now);
+                    osc.frequency.setValueAtTime(1318.51, now + 0.08);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.setValueAtTime(0.12, now + 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'powerup') {
+                    const now = ctx.currentTime;
+                    const notes = [330, 392, 659, 523, 587, 784];
+                    const dur = 0.08;
+                    notes.forEach((freq, index) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + index * dur);
+                        gain.gain.setValueAtTime(0.08, now + index * dur);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, now + index * dur + dur * 1.6);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + index * dur);
+                        osc.stop(now + index * dur + dur * 1.6);
+                    });
+                } else if (type === 'levelup') {
+                    const now = ctx.currentTime;
+                    const notes = [523, 659, 784, 1046, 1318, 1568];
+                    const dur = 0.09;
+                    notes.forEach((freq, index) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now + index * 0.08);
+                        gain.gain.setValueAtTime(0.1, now + index * 0.08);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.08 + 0.45);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + index * 0.08);
+                        osc.stop(now + index * 0.08 + 0.45);
+                    });
+                } else if (type === 'pipe') {
+                    const now = ctx.currentTime;
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(320, now);
+                    osc.frequency.linearRampToValueAtTime(120, now + 0.28);
+                    gain.gain.setValueAtTime(0.07, now);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.28);
+                } else if (type === 'delete') {
+                    const now = ctx.currentTime;
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(450, now);
+                    osc.frequency.linearRampToValueAtTime(70, now + 0.3);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                }
+            } catch(e) { console.warn("Failed to play synthesized sound", e); }
+        };
+
+        const getAggregateFlavors = (flavorData) => {
+            const categories = [
+                { key: 'fruit', label: '과일 🍎', color: '#ef4444', value: 0 },
+                { key: 'sweet', label: '달콤 🍯', color: '#f59e0b', value: 0 },
+                { key: 'woody', label: '나무 🪵', color: '#84cc16', value: 0 },
+                { key: 'peat', label: '피트 🔥', color: '#8b5cf6', value: 0 },
+                { key: 'sea', label: '해풍 🌊', color: '#3b82f6', value: 0 },
+                { key: 'roasting', label: '로스팅 ☕', color: '#57534e', value: 0 },
+                { key: 'nutty', label: '고소 🥜', color: '#d97706', value: 0 },
+                { key: 'herbal', label: '허브 🌿', color: '#10b981', value: 0 }
+            ];
+
+            if (!flavorData || !Array.isArray(flavorData)) return categories;
+
+            flavorData.forEach(item => {
+                let found = false;
+                for (let i = 0; i < FLAVOR_CATEGORIES.length; i++) {
+                    const mainCat = FLAVOR_CATEGORIES[i];
+                    for (let j = 0; j < mainCat.subCategories.length; j++) {
+                        const subCat = mainCat.subCategories[j];
+                        if (subCat.items.includes(item.name)) {
+                            categories[i].value += item.value;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) break;
+                }
+                if (!found) {
+                    if (item.color === '#ef4444') categories[0].value += item.value;
+                    else if (item.color === '#f59e0b') categories[1].value += item.value;
+                    else if (item.color === '#84cc16') categories[2].value += item.value;
+                    else if (item.color === '#8b5cf6') categories[3].value += item.value;
+                    else if (item.color === '#3b82f6') categories[4].value += item.value;
+                    else if (item.color === '#57534e') categories[5].value += item.value;
+                    else if (item.color === '#d97706') categories[6].value += item.value;
+                    else if (item.color === '#10b981') categories[7].value += item.value;
+                }
+            });
+
+            return categories;
+        };
+
+        const TastingRadarChart = ({ flavorData, size = 220 }) => {
+            const categories = getAggregateFlavors(flavorData);
+            const cx = size / 2;
+            const cy = size / 2;
+            const r = (size / 2) * 0.65;
+            
+            const levels = [0.2, 0.4, 0.6, 0.8, 1.0];
+            const getOctagonPoints = (lvl) => {
+                const pts = [];
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i * 2 * Math.PI) / 8 - Math.PI / 2;
+                    const x = cx + r * lvl * Math.cos(angle);
+                    const y = cy + r * lvl * Math.sin(angle);
+                    pts.push(`${x},${y}`);
+                }
+                return pts.join(' ');
+            };
+
+            const dataPoints = [];
+            categories.forEach((cat, i) => {
+                const angle = (i * 2 * Math.PI) / 8 - Math.PI / 2;
+                const valPercent = cat.value / 100;
+                const x = cx + r * valPercent * Math.cos(angle);
+                const y = cy + r * valPercent * Math.sin(angle);
+                dataPoints.push(`${x},${y}`);
+            });
+            const dataPointsStr = dataPoints.join(' ');
+
+            return (
+                <div className="flex flex-col items-center justify-center p-2.5 bg-gray-950/60 rounded-xl border border-gray-800 shadow-inner">
+                    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="overflow-visible">
+                        {levels.map((lvl, index) => (
+                            <polygon
+                                key={index}
+                                points={getOctagonPoints(lvl)}
+                                fill="none"
+                                stroke="#4b5563"
+                                strokeWidth="0.8"
+                                strokeDasharray={index === 4 ? "none" : "2,2"}
+                                className="opacity-30"
+                            />
+                        ))}
+
+                        {Array.from({ length: 8 }).map((_, i) => {
+                            const angle = (i * 2 * Math.PI) / 8 - Math.PI / 2;
+                            const x = cx + r * Math.cos(angle);
+                            const y = cy + r * Math.sin(angle);
+                            return (
+                                <line
+                                    key={i}
+                                    x1={cx}
+                                    y1={cy}
+                                    x2={x}
+                                    y2={y}
+                                    stroke="#4b5563"
+                                    strokeWidth="0.8"
+                                    className="opacity-30"
+                                />
+                            );
+                        })}
+
+                        {categories.map((cat, i) => {
+                            const angle = (i * 2 * Math.PI) / 8 - Math.PI / 2;
+                            const labelR = r + 15;
+                            const x = cx + labelR * Math.cos(angle);
+                            const y = cy + labelR * Math.sin(angle);
+                            
+                            let textAnchor = "middle";
+                            if (Math.cos(angle) > 0.1) textAnchor = "start";
+                            else if (Math.cos(angle) < -0.1) textAnchor = "end";
+
+                            let dy = "0.33em";
+                            if (Math.sin(angle) > 0.8) dy = "0.8em";
+                            else if (Math.sin(angle) < -0.8) dy = "-0.2em";
+
+                            return (
+                                <text
+                                    key={cat.key}
+                                    x={x}
+                                    y={y}
+                                    textAnchor={textAnchor}
+                                    dy={dy}
+                                    fill={cat.value > 0 ? cat.color : "#6b7280"}
+                                    className="text-[9px] font-black select-none"
+                                >
+                                    {cat.label} {cat.value > 0 && `(${cat.value}%)`}
+                                </text>
+                            );
+                        })}
+
+                        <circle cx={cx} cy={cy} r="2.5" fill="#fbbf24" className="opacity-50" />
+
+                        {flavorData && flavorData.length > 0 && (
+                            <React.Fragment>
+                                <polygon
+                                    points={dataPointsStr}
+                                    fill="url(#radarGradient)"
+                                    stroke="#fbbf24"
+                                    strokeWidth="2"
+                                    className="transition-all duration-300"
+                                />
+                                {categories.map((cat, i) => {
+                                    if (cat.value === 0) return null;
+                                    const angle = (i * 2 * Math.PI) / 8 - Math.PI / 2;
+                                    const valPercent = cat.value / 100;
+                                    const x = cx + r * valPercent * Math.cos(angle);
+                                    const y = cy + r * valPercent * Math.sin(angle);
+                                    return (
+                                        <circle
+                                            key={i}
+                                            cx={x}
+                                            cy={y}
+                                            r="3.5"
+                                            fill="#111827"
+                                            stroke={cat.color}
+                                            strokeWidth="1.5"
+                                        />
+                                    );
+                                })}
+                            </React.Fragment>
+                        )}
+                        
+                        <defs>
+                            <radialGradient id="radarGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                                <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.05" />
+                                <stop offset="85%" stopColor="#d97706" stopOpacity="0.25" />
+                                <stop offset="100%" stopColor="#fbbf24" stopOpacity="0.4" />
+                            </radialGradient>
+                        </defs>
+                    </svg>
+                </div>
+            );
+        };
+
+        // --- Glassmorphic, Mario-themed Login / Signup Gatekeeper Overlay ---
+        function AuthScreen({ onGuestMode }) {
+            const [isSignUp, setIsSignUp] = React.useState(false);
+            const [email, setEmail] = React.useState('');
+            const [password, setPassword] = React.useState('');
+            const [errorMsg, setErrorMsg] = React.useState('');
+            const [isLoading, setIsLoading] = React.useState(false);
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setErrorMsg('');
+                setIsLoading(true);
+                playMarioSound('coin');
+                
+                try {
+                    if (isSignUp) {
+                        await auth.createUserWithEmailAndPassword(email, password);
+                    } else {
+                        await auth.signInWithEmailAndPassword(email, password);
+                    }
+                } catch (e) {
+                    console.error("Auth Error:", e);
+                    let korMessage = "로그인 중 오류가 발생했습니다.";
+                    if (e.code === 'auth/wrong-password') korMessage = "비밀번호가 올바르지 않습니다.";
+                    else if (e.code === 'auth/user-not-found') korMessage = "등록되지 않은 이메일 계정입니다.";
+                    else if (e.code === 'auth/email-already-in-use') korMessage = "이미 사용 중인 이메일 주소입니다.";
+                    else if (e.code === 'auth/weak-password') korMessage = "비밀번호는 최소 6자리 이상이어야 합니다.";
+                    else if (e.code === 'auth/invalid-email') korMessage = "유효하지 않은 이메일 형식입니다.";
+                    setErrorMsg(korMessage);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            const handleGoogleLogin = async () => {
+                setErrorMsg('');
+                setIsLoading(true);
+                playMarioSound('powerup');
+                try {
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    await auth.signInWithPopup(provider);
+                } catch (e) {
+                    console.error("Google Auth Error:", e);
+                    setErrorMsg("구글 로그인 중 오류가 발생했습니다.");
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            return (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md px-4">
+                    <div className="w-full max-w-md bg-gray-900 border-2 border-amber-500 rounded-2xl shadow-[0_0_30px_rgba(245,158,11,0.3)] overflow-hidden animate-in zoom-in-95 duration-200">
+                        {/* Mario-style header */}
+                        <div className="bg-gradient-to-r from-red-600 to-amber-600 p-6 text-center border-b-4 border-amber-400 relative">
+                            <div className="absolute top-2 left-4 text-xs font-black text-amber-200 select-none animate-bounce" style={{ animationDuration: '3s' }}>⭐ SUL-PER MARIO</div>
+                            <h3 className="text-2xl font-black text-white tracking-widest mt-2 select-none uppercase">
+                                WHISKEY ADVENTURE
+                            </h3>
+                            <p className="text-[10px] text-amber-100 font-bold mt-1 tracking-wider">
+                                클라우드 동기화로 술장을 백업하세요!
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                            {errorMsg && (
+                                <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs p-3 rounded-lg flex items-center gap-2">
+                                    <span>⚠️</span> {errorMsg}
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">이메일 주소</label>
+                                <input 
+                                    type="email" 
+                                    required 
+                                    className="w-full bg-gray-950 text-amber-50 border border-gray-700 rounded-lg py-2.5 px-3 focus:outline-none focus:border-amber-500 text-sm"
+                                    placeholder="your-email@example.com" 
+                                    value={email} 
+                                    onChange={e => setEmail(e.target.value)} 
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">비밀번호</label>
+                                <input 
+                                    type="password" 
+                                    required 
+                                    className="w-full bg-gray-950 text-amber-50 border border-gray-700 rounded-lg py-2.5 px-3 focus:outline-none focus:border-amber-500 text-sm"
+                                    placeholder="••••••" 
+                                    value={password} 
+                                    onChange={e => setPassword(e.target.value)} 
+                                />
+                            </div>
+
+                            <button 
+                                type="submit" 
+                                disabled={isLoading}
+                                className="w-full py-3 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white rounded-lg font-black text-sm tracking-widest shadow-lg transition-colors border-b-4 border-amber-800 active:border-b-0 active:mt-1 flex items-center justify-center gap-2"
+                            >
+                                {isLoading ? '버섯 로딩 중...' : (isSignUp ? '모험 시작 (회원가입)' : '게임 스타트 (로그인)')}
+                            </button>
+
+                            <div className="relative my-6 text-center">
+                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-800"></div></div>
+                                <span className="relative bg-gray-900 px-3 text-[10px] uppercase font-bold text-gray-500 tracking-widest">OR</span>
+                            </div>
+
+                            <button 
+                                type="button" 
+                                onClick={handleGoogleLogin}
+                                disabled={isLoading}
+                                className="w-full py-2.5 bg-white hover:bg-gray-100 disabled:opacity-50 text-gray-800 rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-colors border border-gray-300 shadow-sm"
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z" fill="#FBBC05"/>
+                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                                </svg>
+                                구글 계정으로 로그인
+                            </button>
+
+                            <div className="flex justify-between text-xs pt-4 font-bold select-none border-t border-gray-800">
+                                <button 
+                                    type="button" 
+                                    onClick={() => { setErrorMsg(''); setIsSignUp(!isSignUp); playMarioSound('coin'); }} 
+                                    className="text-amber-500 hover:text-amber-400"
+                                >
+                                    {isSignUp ? '이미 계정이 있으신가요? 로그인' : '새 계정 만들기 (회원가입)'}
+                                </button>
+                                <button 
+                                    type="button" 
+                                    onClick={onGuestMode} 
+                                    className="text-gray-400 hover:text-gray-300 underline"
+                                >
+                                    임시 오프라인 모드
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+
+        function App() {
+            const { useState, useMemo, useEffect, useRef } = React;
+            
+            // 기본 탭을 타일 뷰로 설정
+            const [activeTab, setActiveTab] = useState('cabinet_tile');
+            
+            // 데이터 로드 시 빈 화면 방지를 위한 안전한 초기화
+            const [myWhiskeys, setMyWhiskeys] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('myWhiskeyCabinetData');
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        return Array.isArray(parsed) ? parsed : [];
+                    }
+                } catch(e) { console.warn("Failed to parse myWhiskeys", e); }
+                return []; 
+            });
+
+            const [stores, setStores] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('myWhiskeyStoresData');
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        return Array.isArray(parsed) ? parsed : ['이마트', '트레이더스', '모닝마트', '마포글로벌마트', '보틀벙커', 'CU', 'GS', '공항면세점'];
+                    }
+                } catch(e) { console.warn("Failed to parse stores", e); }
+                return ['이마트', '트레이더스', '모닝마트', '마포글로벌마트', '보틀벙커', 'CU', 'GS', '공항면세점'];
+            });
+
+            const [ages, setAges] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('myWhiskeyAgesData');
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        return Array.isArray(parsed) ? parsed : ['NAS', '6', '7', '8', '9', '10', '12', '13', '14', '16', '17', '18', '21', '30'];
+                    }
+                } catch(e) { console.warn("Failed to parse ages", e); }
+                return ['NAS', '6', '7', '8', '9', '10', '12', '13', '14', '16', '17', '18', '21', '30'];
+            });
+
+            const [bannerImage, setBannerImage] = useState(() => {
+                try { return localStorage.getItem('myWhiskeyBannerData') || null; }
+                catch(e) { return null; }
+            });
+
+            const [user, setUser] = useState(null);
+            const [isAuthChecking, setIsAuthChecking] = useState(isFirebaseActive);
+            const [isCloudSyncing, setIsCloudSyncing] = useState(false);
+            const [isGuestMode, setIsGuestMode] = useState(false);
+            const [firebaseConfigModal, setFirebaseConfigModal] = useState(false);
+            const [firebaseConfigInput, setFirebaseConfigInput] = useState(() => {
+                return getStoredFirebaseConfig() || { apiKey: '', authDomain: '', projectId: '', storageBucket: '', messagingSenderId: '', appId: '' };
+            });
+
+            const [showScrollTop, setShowScrollTop] = useState(false);
+
+            const [muted, setMuted] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('myWhiskeyMute');
+                    return saved ? JSON.parse(saved) : false;
+                } catch(e) { return false; }
+            });
+            
+            useEffect(() => {
+                localStorage.setItem('myWhiskeyMute', JSON.stringify(muted));
+                isAudioMuted = muted;
+            }, [muted]);
+            
+            const toggleMute = () => {
+                const newMute = !muted;
+                setMuted(newMute);
+                isAudioMuted = newMute;
+                if (!newMute) {
+                    setTimeout(() => playMarioSound('coin'), 50);
+                }
+            };
+
+            const [aiCocktail, setAiCocktail] = useState('');
+            const [isGeneratingCocktail, setIsGeneratingCocktail] = useState(false);
+            const [aiPairing, setAiPairing] = useState('');
+            const [isGeneratingPairing, setIsGeneratingPairing] = useState(false);
+
+            const stats = useMemo(() => {
+                const bottlesCount = myWhiskeys.length;
+                const reviewsCount = myWhiskeys.filter(w => w.review && w.review.trim()).length;
+                
+                const allFlavors = new Set();
+                myWhiskeys.forEach(w => {
+                    if (Array.isArray(w.flavor)) {
+                        w.flavor.forEach(f => allFlavors.add(f.name));
+                    } else if (typeof w.flavor === 'string' && w.flavor) {
+                        allFlavors.add(w.flavor);
+                    }
+                });
+                
+                const flavorsCount = allFlavors.size;
+                const highTierCount = myWhiskeys.filter(w => w.tier === 'S' || w.tier === 'A').length;
+                
+                const xp = (bottlesCount * 15) + (reviewsCount * 20) + (flavorsCount * 10) + (highTierCount * 30);
+                
+                let level = 1;
+                let levelTitle = "입문용 배관공 (Novice Plumber)";
+                let nextXp = 100;
+                let prevXp = 0;
+                
+                if (xp > 1000) {
+                    level = 5;
+                    levelTitle = "설퍼마리오 챔피언 (Sul-per Mario Champion)";
+                    nextXp = 2000;
+                    prevXp = 1000;
+                } else if (xp > 600) {
+                    level = 4;
+                    levelTitle = "싱글몰트 스타마스터 (Single Malt Star Master)";
+                    nextXp = 1000;
+                    prevXp = 600;
+                } else if (xp > 300) {
+                    level = 3;
+                    levelTitle = "피트 파이어 플라워 (Peat Fire Flower)";
+                    nextXp = 600;
+                    prevXp = 300;
+                } else if (xp > 100) {
+                    level = 2;
+                    levelTitle = "버번 머시룸 파인더 (Bourbon Mushroom Finder)";
+                    nextXp = 300;
+                    prevXp = 100;
+                }
+                
+                const percent = Math.min(100, Math.max(0, ((xp - prevXp) / (nextXp - prevXp)) * 100));
+                
+                let sweetCoins = 0;
+                let peatedFireFlowers = 0;
+                let starCount = 0;
+                
+                myWhiskeys.forEach(w => {
+                    if (w.tier === 'S') starCount++;
+                    
+                    const flavorList = Array.isArray(w.flavor) ? w.flavor.map(f => f.name) : [];
+                    const sweetItems = ['바닐라', '꿀', '카라멜', '토피', '메이플 시럽', '흑설탕'];
+                    if (flavorList.some(f => sweetItems.includes(f))) sweetCoins++;
+                    
+                    const peatItems = ['모닥불', '장작', '숯', '재', '연기', '소독약', '요오드', '피트'];
+                    if (flavorList.some(f => peatItems.includes(f))) peatedFireFlowers++;
+                });
+
+                const totalPrice = myWhiskeys.reduce((sum, w) => sum + (Number(w.price) || 0), 0);
+                
+                return {
+                    xp,
+                    level,
+                    levelTitle,
+                    nextXp,
+                    prevXp,
+                    percent,
+                    sweetCoins,
+                    peatedFireFlowers,
+                    starCount,
+                    totalPrice
+                };
+            }, [myWhiskeys]);
+
+            const prevLevelRef = useRef(stats.level);
+            useEffect(() => {
+                if (stats.level > prevLevelRef.current) {
+                    playMarioSound('levelup');
+                }
+                prevLevelRef.current = stats.level;
+            }, [stats.level]);
+
+            useEffect(() => { localStorage.setItem('myWhiskeyCabinetData', JSON.stringify(myWhiskeys)); }, [myWhiskeys]);
+            useEffect(() => { localStorage.setItem('myWhiskeyStoresData', JSON.stringify(stores)); }, [stores]);
+            useEffect(() => { localStorage.setItem('myWhiskeyAgesData', JSON.stringify(ages)); }, [ages]);
+            useEffect(() => {
+                try {
+                    if (bannerImage) localStorage.setItem('myWhiskeyBannerData', bannerImage);
+                    else localStorage.removeItem('myWhiskeyBannerData');
+                } catch (e) {
+                    showAlert("이미지 용량이 너무 커서 저장할 수 없습니다.");
+                    localStorage.removeItem('myWhiskeyBannerData');
+                    setBannerImage(null);
+                }
+            }, [bannerImage]);
+            
+            // 스크롤 감지 이펙트 추가
+            useEffect(() => {
+                const handleScroll = () => {
+                    if (window.scrollY > 300) {
+                        setShowScrollTop(true);
+                    } else {
+                        setShowScrollTop(false);
+                    }
+                };
+
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            const loadOfflineCabinet = () => {
+                try {
+                    const savedCabinet = localStorage.getItem('myWhiskeyCabinetData');
+                    const savedStores = localStorage.getItem('myWhiskeyStoresData');
+                    const savedAges = localStorage.getItem('myWhiskeyAgesData');
+                    const savedBanner = localStorage.getItem('myWhiskeyBannerData');
+                    
+                    if (savedCabinet) setMyWhiskeys(JSON.parse(savedCabinet));
+                    if (savedStores) setStores(JSON.parse(savedStores));
+                    if (savedAges) setAges(JSON.parse(savedAges));
+                    if (savedBanner) setBannerImage(savedBanner);
+                } catch(e) { console.warn("Fallback local fetch failed", e); }
+            };
+
+            const syncFromFirestore = async (uid) => {
+                if (!isFirebaseActive || !uid) return;
+                setIsCloudSyncing(true);
+                try {
+                    const userDoc = await db.collection('users').doc(uid).get();
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        if (Array.isArray(userData.stores)) setStores(userData.stores);
+                        if (Array.isArray(userData.ages)) setAges(userData.ages);
+                        if (userData.bannerImage !== undefined && userData.bannerImage !== null) {
+                            setBannerImage(userData.bannerImage);
+                        }
+                    }
+                    
+                    const cabinetSnapshot = await db.collection('users').doc(uid).collection('cabinet').get();
+                    const cloudCabinet = [];
+                    cabinetSnapshot.forEach(doc => {
+                        cloudCabinet.push({ id: doc.id, ...doc.data() });
+                    });
+                    setMyWhiskeys(cloudCabinet);
+                } catch(e) {
+                    console.error("Firestore Fetch Error:", e);
+                    showAlert("클라우드 데이터를 불러오는 중 오류가 발생했습니다.");
+                } finally {
+                    setIsCloudSyncing(false);
+                }
+            };
+
+            const saveWhiskeyToCloud = async (whiskey) => {
+                if (!isFirebaseActive || !user) return;
+                try {
+                    const data = {
+                        name: whiskey.name || '',
+                        age: whiskey.age || '',
+                        type: whiskey.type || '',
+                        flavor: Array.isArray(whiskey.flavor) ? whiskey.flavor : [],
+                        price: whiskey.price || '',
+                        store: whiskey.store || '',
+                        date: whiskey.date || '',
+                        tier: whiskey.tier || '-',
+                        review: whiskey.review || '',
+                        image: whiskey.image || ''
+                    };
+                    await db.collection('users').doc(user.uid).collection('cabinet').doc(whiskey.id).set(data);
+                } catch(e) { console.error("Firestore Write Error:", e); }
+            };
+
+            const deleteWhiskeyFromCloud = async (id) => {
+                if (!isFirebaseActive || !user) return;
+                try {
+                    await db.collection('users').doc(user.uid).collection('cabinet').doc(id).delete();
+                } catch(e) { console.error("Firestore Delete Error:", e); }
+            };
+
+            const saveUserConfigsToCloud = async (newStores, newAges, newBanner) => {
+                if (!isFirebaseActive || !user) return;
+                try {
+                    const payload = {};
+                    if (newStores !== undefined) payload.stores = newStores;
+                    if (newAges !== undefined) payload.ages = newAges;
+                    if (newBanner !== undefined) payload.bannerImage = newBanner;
+                    
+                    await db.collection('users').doc(user.uid).set(payload, { merge: true });
+                } catch(e) { console.error("Firestore Config Write Error:", e); }
+            };
+
+            useEffect(() => {
+                if (!isFirebaseActive) {
+                    setIsAuthChecking(false);
+                    return;
+                }
+                const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+                    setUser(currentUser);
+                    setIsAuthChecking(false);
+                    if (currentUser) {
+                        playMarioSound('powerup');
+                        syncFromFirestore(currentUser.uid);
+                    } else {
+                        loadOfflineCabinet();
+                    }
+                });
+                return () => unsubscribe();
+            }, []);
+
+            const [selectedIds, setSelectedIds] = useState([]);
+            
+            const totalSelectedPrice = useMemo(() => {
+                return myWhiskeys
+                    .filter(w => selectedIds.includes(w.id))
+                    .reduce((sum, w) => sum + (Number(w.price) || 0), 0);
+            }, [myWhiskeys, selectedIds]);
+            
+            const [editingId, setEditingId] = useState(null);
+            const [editForm, setEditForm] = useState({});
+            const [tileEditForm, setTileEditForm] = useState(null);
+            const tileImageRef = useRef(null);
+            
+            const [modal, setModal] = useState({ isOpen: false, message: '', type: 'alert', onConfirm: null });
+            const [promptInput, setPromptInput] = useState('');
+            const [hoverReview, setHoverReview] = useState({ visible: false, text: '', x: 0, y: 0 });
+            
+            // 리뷰 모달에 isGenerating 상태 추가
+            const [reviewModal, setReviewModal] = useState({ isOpen: false, whiskeyId: null, text: '', isGenerating: false });
+            
+            const [apiModal, setApiModal] = useState({ isOpen: false, query: '', results: [], isSearching: false });
+            
+            // 로컬용 API 키 입력 모달 상태
+            const [apiKeyModal, setApiKeyModal] = useState({ isOpen: false, keyInput: '' });
+
+            const [storeManageModal, setStoreManageModal] = useState(false);
+            const [newStoreInput, setNewStoreInput] = useState('');
+
+            const [ageManageModal, setAgeManageModal] = useState(false);
+            const [newAgeInput, setNewAgeInput] = useState('');
+            
+            const [flavorModal, setFlavorModal] = useState({ isOpen: false, items: [], whiskeyName: '' });
+            
+            const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+            const [searchQuery, setSearchQuery] = useState('');
+            
+            const fileInputRef = useRef(null);
+            const bannerInputRef = useRef(null);
+
+            const showAlert = (message) => setModal({ isOpen: true, message, type: 'alert', onConfirm: null });
+            const showConfirm = (message, onConfirm) => setModal({ isOpen: true, message, type: 'confirm', onConfirm });
+            const closeModal = () => setModal({ isOpen: false, message: '', type: 'alert', onConfirm: null });
+
+            useEffect(() => {
+                setAiCocktail('');
+                setAiPairing('');
+            }, [tileEditForm?.id]);
+
+            const handleGenerateAICocktail = async () => {
+                if (!tileEditForm) return;
+                setIsGeneratingCocktail(true);
+                
+                const flavorText = Array.isArray(tileEditForm.flavor) && tileEditForm.flavor.length > 0
+                    ? tileEditForm.flavor.map(f => f.name).join(', ') 
+                    : '특징 없음';
+
+                const prompt = `당신은 재치 넘치는 바텐더이자 슈퍼마리오 시리즈 전문가입니다. 다음 위스키의 프로필을 바탕으로 창의적인 '마리오 테마 칵테일' 레시피를 하나 만들어주세요.
+                - 위스키 이름: ${tileEditForm.name}
+                - 숙성년수: ${tileEditForm.age || 'NAS'}
+                - 카테고리: ${tileEditForm.type || '미상'}
+                - 주요 풍미: ${flavorText}
+                
+                조건:
+                1. 칵테일 이름은 위스키의 성격과 마리오 세계관을 엮어 아주 매력적으로 지어주세요 (예: '쿠파의 용암 하이볼', '피치 공주의 셰리 피즈').
+                2. 재료 분량(레시피), 장식(Garnish), 제조 방법(조조/기법)을 가볍게 설명해주세요.
+                3. 친근하고 감성적이되, 너무 길지 않게 4~5문장 이내의 깔끔한 한국어로 출력하세요.`;
+
+                try {
+                    const localKey = localStorage.getItem('gemini_api_key') || '';
+                    const res = await generateGeminiContent(prompt, localKey);
+                    setAiCocktail(res.trim());
+                    playMarioSound('levelup');
+                } catch(error) {
+                    console.error(error);
+                    if (error.message === "API_KEY_MISSING" || error.message.includes("400") || error.message.includes("403")) {
+                        setApiKeyModal({ isOpen: true, keyInput: localStorage.getItem('gemini_api_key') || '' });
+                    } else {
+                        showAlert('칵테일 생성에 실패했습니다.');
+                    }
+                } finally {
+                    setIsGeneratingCocktail(false);
+                }
+            };
+
+            const handleGenerateAIPairing = async () => {
+                if (!tileEditForm) return;
+                setIsGeneratingPairing(true);
+                
+                const flavorText = Array.isArray(tileEditForm.flavor) && tileEditForm.flavor.length > 0
+                    ? tileEditForm.flavor.map(f => f.name).join(', ') 
+                    : '특징 없음';
+
+                const prompt = `당신은 푸드 스타일리스트이자 위스키 마리아주 전문가입니다. 다음 위스키의 풍미에 가장 잘 어울리는 '추천 안주(푸드 페어링)' 조합을 2가지 제안해주세요.
+                - 위스키 이름: ${tileEditForm.name}
+                - 숙성년수: ${tileEditForm.age || 'NAS'}
+                - 주요 풍미: ${flavorText}
+                
+                조건:
+                1. 한국식 안주(예: 꿀치즈 육포, 약과) 또는 위스키 테이블 디저트 중 가장 어울리는 조합을 추천해주세요.
+                2. 왜 어울리는지(페어링 원리) 간결하게 3~4문장 내외로 맛있게 설명해주세요.
+                3. 다른 잡담 없이 한국어로 핵심 추천 텍스트만 출력하세요.`;
+
+                try {
+                    const localKey = localStorage.getItem('gemini_api_key') || '';
+                    const res = await generateGeminiContent(prompt, localKey);
+                    setAiPairing(res.trim());
+                    playMarioSound('levelup');
+                } catch(error) {
+                    console.error(error);
+                    if (error.message === "API_KEY_MISSING" || error.message.includes("400") || error.message.includes("403")) {
+                        setApiKeyModal({ isOpen: true, keyInput: localStorage.getItem('gemini_api_key') || '' });
+                    } else {
+                        showAlert('안주 추천 생성에 실패했습니다.');
+                    }
+                } finally {
+                    setIsGeneratingPairing(false);
+                }
+            };
+
+            const handleFileExport = () => {
+                try {
+                    playMarioSound('pipe');
+                    
+                    if (myWhiskeys.length === 0) {
+                        return showAlert('내보낼 위스키 데이터가 없습니다.');
+                    }
+                    
+                    const exportData = myWhiskeys.map(row => {
+                        let flavorString = '';
+                        if (Array.isArray(row.flavor)) {
+                            flavorString = row.flavor.map(f => `${f.name}:${f.value}`).join(',');
+                        } else {
+                            flavorString = String(row.flavor || '');
+                        }
+                        
+                        return {
+                            '이름': row.name || '',
+                            '숙성년수': row.age || '',
+                            '카테고리': row.type || '',
+                            '풍미 요소': flavorString,
+                            '가격': row.price || '',
+                            '구매처': row.store || '',
+                            '구입일': row.date || '',
+                            '티어': row.tier || '-',
+                            '시음기': row.review || ''
+                        };
+                    });
+
+                    const ws = XLSX.utils.json_to_sheet(exportData);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "Sul-per Mario Collection");
+                    
+                    XLSX.writeFile(wb, `Sul-per_Mario_Cabinet_${new Date().toISOString().split('T')[0]}.xlsx`);
+                    showAlert('성공적으로 엑셀 파일로 백업되었습니다!');
+                } catch (error) {
+                    console.error("Export Error:", error);
+                    showAlert('엑셀 백업 중 오류가 발생했습니다. 다시 시도해주세요.');
+                }
+            };
+
+            const scrollToTop = () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            const handleMouseEnterReview = (e, text) => {
+                const rect = e.target.getBoundingClientRect();
+                setHoverReview({ visible: true, text, x: rect.left + rect.width / 2, y: rect.top - 8 });
+            };
+            const handleMouseLeaveReview = () => setHoverReview({ visible: false, text: '', x: 0, y: 0 });
+            const handleOpenReview = (whiskey) => { handleMouseLeaveReview(); setReviewModal({ isOpen: true, whiskeyId: whiskey.id, text: whiskey.review || '', isGenerating: false }); };
+            const handleSaveReview = () => {
+                const targetWhiskey = myWhiskeys.find(w => w.id === reviewModal.whiskeyId);
+                if (targetWhiskey) {
+                    const updatedWhiskey = { ...targetWhiskey, review: reviewModal.text };
+                    setMyWhiskeys(myWhiskeys.map(w => w.id === reviewModal.whiskeyId ? updatedWhiskey : w));
+                    if (isFirebaseActive && user) {
+                        saveWhiskeyToCloud(updatedWhiskey);
+                    }
+                }
+                setReviewModal({ isOpen: false, whiskeyId: null, text: '', isGenerating: false });
+            };
+
+            // ✨ AI 시음기 자동 생성 기능
+            const handleGenerateAIReview = async () => {
+                const whiskey = myWhiskeys.find(w => w.id === reviewModal.whiskeyId);
+                if (!whiskey) return;
+                
+                setReviewModal(prev => ({ ...prev, isGenerating: true }));
+                
+                const flavorText = Array.isArray(whiskey.flavor) && whiskey.flavor.length > 0
+                    ? whiskey.flavor.map(f => f.name).join(', ') 
+                    : '특징 없음';
+                    
+                const prompt = `당신은 위스키 전문가이자 감성적인 리뷰어입니다. 다음 위스키에 대한 멋진 시음기(Tasting Note) 초안을 3~4문장으로 작성해주세요. 
+                - 위스키 이름: ${whiskey.name}
+                - 숙성년수: ${whiskey.age || '미상'}
+                - 카테고리: ${whiskey.type || '미상'}
+                - 느껴지는 주요 풍미: ${flavorText}
+                
+                전문적이면서도 매력적인 톤으로, 다른 부연 설명 없이 시음기 텍스트만 한국어로 출력하세요.`;
+                
+                try {
+                    const localKey = localStorage.getItem('gemini_api_key') || '';
+                    const generatedText = await generateGeminiContent(prompt, localKey);
+                    
+                    setReviewModal(prev => ({ 
+                        ...prev, 
+                        text: prev.text ? prev.text + '\n\n---\n[✨ AI 시음기 초안]\n' + generatedText.trim() : generatedText.trim(), 
+                        isGenerating: false 
+                    }));
+                } catch (error) {
+                    console.error("AI Review Error:", error);
+                    // 키 누락 또는 잘못된 키(400)일 경우 API 키 입력 모달을 띄움
+                    if (error.message === "API_KEY_MISSING" || error.message.includes("400") || error.message.includes("403")) {
+                        setApiKeyModal({ isOpen: true, keyInput: localStorage.getItem('gemini_api_key') || '' });
+                    } else {
+                        showAlert('AI 시음기 생성에 실패했습니다. 잠시 후 다시 시도해주세요.');
+                    }
+                    setReviewModal(prev => ({ ...prev, isGenerating: false }));
+                }
+            };
+
+            const handleOpenApiModal = () => setApiModal({ isOpen: true, query: '', results: MOCK_API_DATA, isSearching: false });
+            
+            // ✨ AI 위스키 정보 검색 기능
+            const handleAIApiSearch = async () => {
+                if (!apiModal.query.trim()) return showAlert('검색어를 입력해주세요.');
+                setApiModal(prev => ({ ...prev, isSearching: true, results: [] }));
+                
+                const prompt = `위스키 이름 "${apiModal.query}"와 가장 일치하거나 관련된 실제 위스키 1~3개의 정보를 검색해서 JSON 배열로 제공해줘.
+                필수 포함 필드:
+                - name: 한국어 이름 (예: 맥캘란 12년 더블캐스크)
+                - engName: 영문 이름
+                - age: 숙성년수 (숫자만, NAS인 경우 "NAS")
+                - type: 카테고리 (싱글몰트 스카치, 블렌디드 스카치, 켄터키 버번, 테네시 위스키, 라이 위스키, 재패니즈, 아이리시, 기타 중 1개 선택)
+                - flavor: 대표적인 맛 키워드 1개 (예: 바닐라, 피트, 건포도, 아몬드 등)
+                
+                응답은 순수 JSON 배열([])만 반환해야 하며, 마크다운 기호(백틱 등)나 다른 설명은 절대 포함하지 마.`;
+                
+                try {
+                    const localKey = localStorage.getItem('gemini_api_key') || '';
+                    let responseText = await generateGeminiContent(prompt, localKey);
+                    
+                    // JSON 파싱 전처리 (마크다운 백틱 제거)
+                    responseText = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
+                    const results = JSON.parse(responseText);
+                    
+                    setApiModal(prev => ({ 
+                        ...prev, 
+                        isSearching: false, 
+                        results: Array.isArray(results) ? results : [results] 
+                    }));
+                } catch (error) {
+                    console.error("AI Search Error:", error);
+                    // 키 누락 또는 잘못된 키(400)일 경우 API 키 입력 모달을 띄움
+                    if (error.message === "API_KEY_MISSING" || error.message.includes("400") || error.message.includes("403")) {
+                        setApiKeyModal({ isOpen: true, keyInput: localStorage.getItem('gemini_api_key') || '' });
+                    } else {
+                        showAlert('AI 검색 중 오류가 발생했습니다. 정확한 위스키 이름을 입력해보세요.');
+                    }
+                    setApiModal(prev => ({ ...prev, isSearching: false }));
+                }
+            };
+
+            const handleSelectApiWhiskey = (whiskey) => {
+                if (editingId || tileEditForm) return showAlert('먼저 수정 중인 항목을 저장해주세요.');
+                
+                let legacyFlavor = [];
+                // AI가 반환한 풍미 키워드를 새 카테고리 컬러와 매칭
+                if (whiskey.flavor) {
+                    for (const mainCat of FLAVOR_CATEGORIES) {
+                        for (const subCat of mainCat.subCategories) {
+                            if (subCat.items.includes(whiskey.flavor) || whiskey.flavor.includes(subCat.name)) {
+                                legacyFlavor = [{ name: whiskey.flavor, value: 100, color: mainCat.color }];
+                                break;
+                            }
+                        }
+                        if (legacyFlavor.length > 0) break;
+                    }
+                    if(legacyFlavor.length === 0) {
+                        legacyFlavor = [{ name: whiskey.flavor, value: 100, color: '#9ca3af' }]; // 기본 회색
+                    }
+                }
+
+                const newWhiskey = { id: Date.now().toString(), name: whiskey.name, age: whiskey.age || '', type: whiskey.type || '', flavor: legacyFlavor, price: '', store: '', date: '', tier: '-', review: '', rating: 0, image: '' };
+                setMyWhiskeys([newWhiskey, ...myWhiskeys]);
+                setApiModal({ isOpen: false, query: '', results: [], isSearching: false });
+                
+                if (activeTab === 'cabinet_tile') setTileEditForm(newWhiskey);
+                else startEdit(newWhiskey);
+            };
+
+            const handleSort = (key) => {
+                let direction = 'asc';
+                if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
+                playMarioSound('coin');
+                setSortConfig({ key, direction });
+            };
+
+            const sortedWhiskeys = useMemo(() => {
+                let filteredItems = myWhiskeys;
+                if (searchQuery.trim() !== '') {
+                    const query = searchQuery.toLowerCase();
+                    filteredItems = filteredItems.filter(w => 
+                        (w.name && w.name.toLowerCase().includes(query)) ||
+                        (w.type && w.type.toLowerCase().includes(query)) ||
+                        (w.store && w.store.toLowerCase().includes(query)) ||
+                        (w.review && w.review.toLowerCase().includes(query))
+                    );
+                }
+
+                let sortableItems = [...filteredItems];
+                if (sortConfig.key !== null) {
+                    sortableItems.sort((a, b) => {
+                        let aValue = a[sortConfig.key] || '';
+                        let bValue = b[sortConfig.key] || '';
+                        if (sortConfig.key === 'tier') {
+                            const tierRank = { 'S': 7, 'A': 6, 'B': 5, 'C': 4, 'D': 3, 'F': 2, '-': 1 };
+                            aValue = tierRank[aValue] || 0; bValue = tierRank[bValue] || 0;
+                        } else if (sortConfig.key === 'price') {
+                            aValue = Number(aValue) || 0; bValue = Number(bValue) || 0;
+                        } else if (sortConfig.key === 'age') {
+                            aValue = aValue === 'NAS' ? 0 : (Number(aValue) || -1); bValue = bValue === 'NAS' ? 0 : (Number(bValue) || -1);
+                        } else if (sortConfig.key === 'flavor') {
+                            aValue = Array.isArray(aValue) ? aValue.map(f=>f.name).join('') : String(aValue);
+                            bValue = Array.isArray(bValue) ? bValue.map(f=>f.name).join('') : String(bValue);
+                        }
+                        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+                        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+                        return 0;
+                    });
+                }
+                return sortableItems;
+            }, [myWhiskeys, sortConfig, searchQuery]);
+
+            const getSortIcon = (columnKey) => {
+                if (sortConfig.key !== columnKey) return <ChevronsUpDown size={14} className="text-gray-500 inline-block ml-1 opacity-50 hover:opacity-100" />;
+                return sortConfig.direction === 'asc' ? <ChevronUp size={14} className="text-amber-500 inline-block ml-1" /> : <ChevronDown size={14} className="text-amber-500 inline-block ml-1" />;
+            };
+
+            const handleSelect = (id) => {
+                playMarioSound('coin');
+                setSelectedIds(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
+            };
+            const handleSelectAll = (e) => {
+                playMarioSound('coin');
+                setSelectedIds(e.target.checked ? myWhiskeys.map(w => w.id) : []);
+            };
+            const handleBulkDelete = () => {
+                showConfirm(`선택한 ${selectedIds.length}개의 위스키를 삭제하시겠습니까?`, () => {
+                    playMarioSound('delete');
+                    if (isFirebaseActive && user) {
+                        selectedIds.forEach(id => deleteWhiskeyFromCloud(id));
+                    }
+                    setMyWhiskeys(myWhiskeys.filter(w => !selectedIds.includes(w.id)));
+                    setSelectedIds([]);
+                    closeModal();
+                });
+            };
+            const handleSingleDelete = (id) => {
+                showConfirm('이 위스키를 삭제하시겠습니까?', () => {
+                    playMarioSound('delete');
+                    if (isFirebaseActive && user) {
+                        deleteWhiskeyFromCloud(id);
+                    }
+                    setMyWhiskeys(myWhiskeys.filter(w => w.id !== id));
+                    setSelectedIds(selectedIds.filter(itemId => itemId !== id));
+                    setTileEditForm(null);
+                    closeModal();
+                });
+            };
+
+            const handleAddRow = () => {
+                if (editingId || tileEditForm) return showAlert('먼저 수정 중인 항목을 저장해주세요.');
+                playMarioSound('powerup');
+                const newWhiskey = { id: Date.now().toString(), name: '', age: '', type: '', flavor: [], price: '', store: '', date: '', tier: '-', review: '', image: '' };
+                setMyWhiskeys([newWhiskey, ...myWhiskeys]);
+                
+                if (activeTab === 'cabinet_tile' || activeTab === 'cabinet_shelf') {
+                    setTileEditForm(newWhiskey);
+                } else {
+                    startEdit(newWhiskey);
+                }
+            };
+
+            const startEdit = (whiskey) => {
+                if (editingId && editingId !== whiskey.id) return showAlert('먼저 수정 중인 항목을 저장해주세요.');
+                setEditingId(whiskey.id);
+                const parsedFlavor = Array.isArray(whiskey.flavor) ? whiskey.flavor : [];
+                setEditForm({ ...whiskey, flavor: parsedFlavor });
+            };
+            const cancelEdit = (id) => {
+                setEditingId(null);
+                const targetWhiskey = myWhiskeys.find(w => w.id === id);
+                if (targetWhiskey && !targetWhiskey.name) setMyWhiskeys(myWhiskeys.filter(w => w.id !== id));
+            };
+            const handleSave = () => {
+                if (!editForm.name || !editForm.name.trim()) return showAlert('위스키 이름은 필수입니다!');
+                playMarioSound('coin');
+                if (isFirebaseActive && user) {
+                    saveWhiskeyToCloud(editForm);
+                }
+                setMyWhiskeys(myWhiskeys.map(w => w.id === editingId ? editForm : w));
+                setEditingId(null);
+            };
+            const handleFormChange = (field, value) => setEditForm(prev => ({ ...prev, [field]: value }));
+
+            const handleSaveTileEdit = () => {
+                if (!tileEditForm.name || !tileEditForm.name.trim()) return showAlert('위스키 이름은 필수입니다!');
+                playMarioSound('coin');
+                if (isFirebaseActive && user) {
+                    saveWhiskeyToCloud(tileEditForm);
+                }
+                setMyWhiskeys(myWhiskeys.map(w => w.id === tileEditForm.id ? tileEditForm : w));
+                setTileEditForm(null);
+            };
+            const cancelTileEdit = () => {
+                const targetWhiskey = myWhiskeys.find(w => w.id === tileEditForm.id);
+                if (targetWhiskey && !targetWhiskey.name) setMyWhiskeys(myWhiskeys.filter(w => w.id !== tileEditForm.id));
+                setTileEditForm(null);
+            };
+            const handleTileImageUpload = (e) => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    try {
+                        setTileEditForm(prev => ({ ...prev, image: evt.target.result }));
+                    } catch (e) {
+                        showAlert('이미지 용량이 너무 큽니다. 더 작은 이미지를 사용해주세요.');
+                    }
+                };
+                reader.readAsDataURL(file);
+            };
+
+            const openFlavorModal = () => {
+                const currentItems = tileEditForm ? (Array.isArray(tileEditForm.flavor) ? [...tileEditForm.flavor] : []) : (Array.isArray(editForm.flavor) ? [...editForm.flavor] : []);
+                const currentName = tileEditForm ? tileEditForm.name : editForm.name;
+                setFlavorModal({ isOpen: true, items: currentItems, whiskeyName: currentName });
+            };
+
+            const toggleFlavorSelection = (itemName, color) => {
+                let newItems = [...flavorModal.items];
+                const exists = newItems.findIndex(i => i.name === itemName);
+                if (exists !== -1) newItems.splice(exists, 1);
+                else newItems.push({ name: itemName, color: color, value: 0 });
+
+                if (newItems.length > 0) {
+                    const equalShare = Math.floor(100 / newItems.length);
+                    let remainder = 100 - (equalShare * newItems.length);
+                    newItems.forEach((item, idx) => { item.value = equalShare + (idx < remainder ? 1 : 0); });
+                }
+                setFlavorModal(prev => ({ ...prev, items: newItems }));
+            };
+
+            const handleFlavorSliderChange = (changedIndex, newValue) => {
+                let newItems = [...flavorModal.items];
+                if (newItems.length === 1) { newItems[0].value = 100; setFlavorModal(prev => ({ ...prev, items: newItems })); return; }
+
+                const oldValue = newItems[changedIndex].value;
+                const diff = newValue - oldValue;
+                newItems[changedIndex].value = newValue;
+
+                const others = newItems.map((itm, idx) => ({ ...itm, idx })).filter(itm => itm.idx !== changedIndex);
+                const othersTotal = others.reduce((sum, item) => sum + item.value, 0);
+
+                if (othersTotal === 0) {
+                    const equalDist = -diff / others.length;
+                    others.forEach(item => { newItems[item.idx].value = equalDist; });
+                } else {
+                    others.forEach(item => { newItems[item.idx].value = item.value + (item.value / othersTotal) * (-diff); });
+                }
+
+                newItems.forEach(item => item.value = Math.max(0, Math.min(100, Math.round(item.value))));
+                const total = newItems.reduce((sum, item) => sum + item.value, 0);
+                if (total !== 100 && others.length > 0) {
+                    const fixDiff = 100 - total;
+                    let maxIdx = others[0].idx;
+                    others.forEach(item => { if (newItems[item.idx].value > newItems[maxIdx].value) maxIdx = item.idx; });
+                    newItems[maxIdx].value += fixDiff;
+                }
+                setFlavorModal(prev => ({ ...prev, items: newItems }));
+            };
+
+            const saveFlavorSelection = () => {
+                if (tileEditForm) setTileEditForm(prev => ({ ...prev, flavor: flavorModal.items }));
+                else handleFormChange('flavor', flavorModal.items);
+                setFlavorModal({ isOpen: false, items: [], whiskeyName: '' });
+            };
+
+            const renderFlavorSummary = (flavorData) => {
+                if (!flavorData || flavorData.length === 0) return <span className="text-gray-500 text-sm">풍미 미설정</span>;
+                if (!Array.isArray(flavorData)) return <span className="text-gray-300 text-sm">{flavorData}</span>;
+                
+                return (
+                    <div className="flex flex-col gap-1 w-full mt-1">
+                        {flavorData.map((f, i) => (
+                            <div key={i} className="flex flex-col gap-0.5">
+                                <div className="flex justify-between text-[11px] leading-none text-gray-400">
+                                    <span className="truncate mr-1">{f.name}</span>
+                                    <span className="font-mono">{f.value}%</span>
+                                </div>
+                                <div className="h-1 w-full bg-gray-800 rounded overflow-hidden">
+                                    <div className="h-full rounded" style={{ width: `${f.value}%`, backgroundColor: f.color }}></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                );
+            };
+
+            const handleDragStart = (e, whiskeyId) => {
+                e.dataTransfer.setData('whiskeyId', whiskeyId);
+                e.dataTransfer.effectAllowed = 'move';
+            };
+
+            const handleDragOver = (e) => { e.preventDefault(); };
+
+            const handleDrop = (e, newTier) => {
+                e.preventDefault();
+                const whiskeyId = e.dataTransfer.getData('whiskeyId');
+                if (!whiskeyId) return;
+
+                const dropElement = e.target.closest('[data-whiskey-id]');
+                const targetWhiskeyId = dropElement ? dropElement.getAttribute('data-whiskey-id') : null;
+
+                setMyWhiskeys(prev => {
+                    const newList = [...prev];
+                    const draggedIdx = newList.findIndex(w => w.id === whiskeyId);
+                    if (draggedIdx === -1) return prev;
+
+                    const draggedItem = { ...newList[draggedIdx], tier: newTier };
+                    
+                    if (isFirebaseActive && user) {
+                        saveWhiskeyToCloud(draggedItem);
+                    }
+
+                    newList.splice(draggedIdx, 1);
+
+                    if (targetWhiskeyId && targetWhiskeyId !== whiskeyId) {
+                        let targetIdx = newList.findIndex(w => w.id === targetWhiskeyId);
+                        if (targetIdx !== -1) {
+                            const rect = dropElement.getBoundingClientRect();
+                            const isAfter = e.clientX > rect.left + rect.width / 2;
+                            if (isAfter) targetIdx++;
+                            newList.splice(targetIdx, 0, draggedItem);
+                        } else {
+                            newList.push(draggedItem);
+                        }
+                    } else {
+                        newList.push(draggedItem);
+                    }
+                    return newList;
+                });
+            };
+
+            const handleAgeDragStart = (e, index) => {
+                e.dataTransfer.setData('ageindex', index.toString());
+                e.dataTransfer.effectAllowed = 'move';
+            };
+
+            const handleAgeDragOver = (e) => { e.preventDefault(); };
+
+            const handleAgeDrop = (e, dropIndex) => {
+                e.preventDefault();
+                const dragIndexStr = e.dataTransfer.getData('ageindex');
+                if (dragIndexStr === '') return;
+                
+                const dragIndex = Number(dragIndexStr);
+                if (dragIndex === dropIndex) return;
+
+                const newAges = [...ages];
+                const [draggedItem] = newAges.splice(dragIndex, 1);
+                newAges.splice(dropIndex, 0, draggedItem);
+                
+                setAges(newAges);
+                if (isFirebaseActive && user) {
+                    saveUserConfigsToCloud(undefined, newAges, undefined);
+                }
+            };
+
+            const handleAgeChange = (val) => {
+                if (val === '__MANAGE__') { 
+                    setAgeManageModal(true); 
+                    if (tileEditForm) setTileEditForm(prev => ({...prev, age: ''}));
+                    else handleFormChange('age', ''); 
+                } else { 
+                    if (tileEditForm) setTileEditForm(prev => ({...prev, age: val}));
+                    else handleFormChange('age', val); 
+                }
+            };
+            const handleAddAge = () => {
+                if (newAgeInput.trim() !== '') {
+                    const ageName = newAgeInput.trim();
+                    if (!ages.includes(ageName)) {
+                        const updated = [...ages, ageName];
+                        setAges(updated);
+                        if (isFirebaseActive && user) {
+                            saveUserConfigsToCloud(undefined, updated, undefined);
+                        }
+                    }
+                    else showAlert('이미 존재하는 숙성년수입니다.');
+                    setNewAgeInput('');
+                }
+            };
+
+            const handleStoreChange = (val) => {
+                if (val === '__MANAGE__') { 
+                    setStoreManageModal(true); 
+                    if (tileEditForm) setTileEditForm(prev => ({...prev, store: ''}));
+                    else handleFormChange('store', ''); 
+                } else { 
+                    if (tileEditForm) setTileEditForm(prev => ({...prev, store: val}));
+                    else handleFormChange('store', val); 
+                }
+            };
+            const handleAddStore = () => {
+                if (newStoreInput.trim() !== '') {
+                    const storeName = newStoreInput.trim();
+                    if (!stores.includes(storeName)) {
+                        const updated = [...stores, storeName];
+                        setStores(updated);
+                        if (isFirebaseActive && user) {
+                            saveUserConfigsToCloud(updated, undefined, undefined);
+                        }
+                    }
+                    else showAlert('이미 존재하는 구매처입니다.');
+                    setNewStoreInput('');
+                }
+            };
+
+            const handleBannerUpload = (e) => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => { 
+                    setBannerImage(evt.target.result); 
+                    if (isFirebaseActive && user) {
+                        saveUserConfigsToCloud(undefined, undefined, evt.target.result);
+                    }
+                };
+                reader.readAsDataURL(file);
+            };
+            const handleRemoveBanner = (e) => {
+                e.stopPropagation();
+                showConfirm('배너 이미지를 삭제하시겠습니까?', () => { 
+                    setBannerImage(null); 
+                    if (bannerInputRef.current) bannerInputRef.current.value = ''; 
+                    if (isFirebaseActive && user) {
+                        saveUserConfigsToCloud(undefined, undefined, null);
+                    }
+                    closeModal(); 
+                });
+            };
+            const handleFileUpload = (e) => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    try {
+                        const data = new Uint8Array(evt.target.result);
+                        const wb = XLSX.read(data, { type: 'array' });
+                        const jsonData = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+                        if (jsonData.length === 0) return showAlert('파일에 데이터가 없습니다.');
+                        
+                        const importedWhiskeys = jsonData.map(row => {
+                            let parsedFlavors = [];
+                            const rawFlavor = row['풍미 요소'] || row['flavor'] || '';
+                            if (typeof rawFlavor === 'string' && rawFlavor.trim() !== '') {
+                                rawFlavor.split(',').forEach(part => {
+                                    const subparts = part.split(':');
+                                    const name = subparts[0]?.trim();
+                                    const value = Number(subparts[1]) || 50;
+                                    if (name) {
+                                        let color = '#9ca3af';
+                                        for (const mainCat of FLAVOR_CATEGORIES) {
+                                            for (const subCat of mainCat.subCategories) {
+                                                if (subCat.items.includes(name)) {
+                                                    color = mainCat.color;
+                                                    break;
+                                                }
+                                            }
+                                            if (color !== '#9ca3af') break;
+                                        }
+                                        parsedFlavors.push({ name, value, color });
+                                    }
+                                });
+                            } else if (Array.isArray(rawFlavor)) {
+                                parsedFlavors = rawFlavor;
+                            } else if (rawFlavor) {
+                                parsedFlavors = [{ name: String(rawFlavor), value: 100, color: '#9ca3af' }];
+                            }
+                            
+                            return {
+                                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                                name: row['이름'] || row['name'] || '',
+                                age: row['숙성년수'] || row['age'] || '',
+                                type: row['카테고리'] || row['카테고리(법적/지역)'] || row['type'] || '',
+                                flavor: parsedFlavors,
+                                price: row['가격'] || row['price'] || '',
+                                store: row['구매처'] || row['store'] || '',
+                                date: row['구입일'] || row['date'] || '',
+                                tier: row['티어'] || row['tier'] || '-',
+                                review: row['시음기'] || row['review'] || '',
+                                image: ''
+                            };
+                        }).filter(w => w.name);
+
+                        const newStores = [...stores];
+                        const newAges = [...ages];
+                        importedWhiskeys.forEach(w => { 
+                            if (w.store && !newStores.includes(w.store)) newStores.push(w.store); 
+                            if (w.age && !newAges.includes(w.age)) newAges.push(w.age);
+                        });
+                        setStores(newStores);
+                        setAges(newAges);
+                        
+                        setMyWhiskeys(prev => [...importedWhiskeys, ...prev]);
+                        playMarioSound('pipe');
+                        
+                        if (isFirebaseActive && user) {
+                            setIsCloudSyncing(true);
+                            Promise.all(importedWhiskeys.map(w => saveWhiskeyToCloud(w)))
+                                .then(() => {
+                                    saveUserConfigsToCloud(newStores, newAges, undefined);
+                                    setIsCloudSyncing(false);
+                                    showAlert(`${importedWhiskeys.length}개의 위스키 데이터가 추가되고 클라우드와 동기화되었습니다!`);
+                                })
+                                .catch(err => {
+                                    console.error("Bulk sync error", err);
+                                    setIsCloudSyncing(false);
+                                    showAlert(`클라우드 동기화 중 오류가 발생했지만, 로컬에 저장되었습니다.`);
+                                });
+                        } else {
+                            showAlert(`${importedWhiskeys.length}개의 위스키 데이터가 추가되었습니다!`);
+                        }
+                    } catch (error) { showAlert('오류가 발생했습니다. 올바른 엑셀/CSV 파일인지 확인해주세요.'); }
+                    e.target.value = null;
+                };
+                reader.readAsArrayBuffer(file);
+            };
+
+            const renderMarioDashboard = () => {
+                return (
+                    <div className="bg-gray-900/80 border border-amber-900/20 backdrop-blur-md p-6 rounded-2xl shadow-2xl mb-8 max-w-5xl mx-auto animate-in fade-in duration-300 relative overflow-hidden">
+                        <div className="absolute right-0 bottom-0 opacity-[0.03] select-none pointer-events-none">
+                            <svg width="200" height="120" viewBox="0 0 200 120" fill="currentColor" className="text-amber-500">
+                                <rect x="0" y="0" width="90" height="30" />
+                                <rect x="100" y="0" width="90" height="30" />
+                                <rect x="0" y="40" width="45" height="30" />
+                                <rect x="55" y="40" width="80" height="30" />
+                                <rect x="145" y="40" width="45" height="30" />
+                                <rect x="0" y="80" width="90" height="30" />
+                                <rect x="100" y="80" width="90" height="30" />
+                            </svg>
+                        </div>
+
+                        <div className="flex flex-col md:flex-row gap-6 items-center justify-between relative z-10">
+                            <div className="flex items-center gap-4 w-full md:w-auto">
+                                <div className="w-16 h-16 shrink-0 bg-gradient-to-br from-amber-500 to-red-600 rounded-2xl flex flex-col items-center justify-center border-2 border-amber-300 shadow-lg text-white font-bold select-none">
+                                    <span className="text-[10px] leading-none uppercase text-amber-200">WORLD</span>
+                                    <span className="text-2xl leading-none font-black">{stats.level}</span>
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-black text-amber-400 tracking-wide leading-tight flex items-center gap-1.5 uppercase">
+                                        {stats.levelTitle}
+                                    </h2>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <div className="text-xs text-gray-400">XP: <span className="font-mono text-amber-300 font-bold">{stats.xp}</span> / <span className="font-mono text-gray-500">{stats.nextXp}</span></div>
+                                        <div className="w-24 h-2 bg-gray-800 rounded-full overflow-hidden border border-gray-700">
+                                            <div className="h-full bg-gradient-to-r from-amber-500 to-yellow-300 rounded-full" style={{ width: `${stats.percent}%` }}></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full md:w-auto flex-1 max-w-xl">
+                                <div className="bg-gray-950/60 border border-gray-850 p-3 rounded-xl flex items-center gap-2.5 shadow-inner">
+                                    <span className="text-2xl animate-spin" style={{ animationDuration: '6s' }}>🪙</span>
+                                    <div>
+                                        <span className="text-[9px] uppercase font-bold text-gray-500 block leading-none">TOTAL SPENT</span>
+                                        <span className="text-sm font-black text-yellow-400 font-mono tracking-tight">{stats.totalPrice.toLocaleString()}원</span>
+                                    </div>
+                                </div>
+
+                                <div className="bg-gray-950/60 border border-gray-850 p-3 rounded-xl flex items-center gap-2.5 shadow-inner hover:border-orange-500/30 transition-colors">
+                                    <span className="text-2xl">🍄</span>
+                                    <div>
+                                        <span className="text-[9px] uppercase font-bold text-gray-500 block leading-none">SWEET SHROOM</span>
+                                        <span className="text-sm font-black text-orange-400 font-mono">{stats.sweetCoins}개</span>
+                                    </div>
+                                </div>
+
+                                <div className="bg-gray-950/60 border border-gray-850 p-3 rounded-xl flex items-center gap-2.5 shadow-inner hover:border-red-500/30 transition-colors">
+                                    <span className="text-2xl animate-pulse">🔥</span>
+                                    <div>
+                                        <span className="text-[9px] uppercase font-bold text-gray-500 block leading-none">PEAT FLOWER</span>
+                                        <span className="text-sm font-black text-red-500 font-mono">{stats.peatedFireFlowers}개</span>
+                                    </div>
+                                </div>
+
+                                <div className="bg-gray-950/60 border border-gray-850 p-3 rounded-xl flex items-center gap-2.5 shadow-inner hover:border-yellow-500/30 transition-colors">
+                                    <span className="text-2xl animate-bounce" style={{ animationDuration: '3s' }}>⭐</span>
+                                    <div>
+                                        <span className="text-[9px] uppercase font-bold text-gray-500 block leading-none">SUPER STAR</span>
+                                        <span className="text-sm font-black text-yellow-400 font-mono">{stats.starCount}개</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 pt-4 border-t border-gray-850 relative select-none">
+                            <div className="absolute top-[26px] w-full h-[6px] bg-gradient-to-r from-red-650 via-amber-650 to-green-650 border-t border-b border-gray-950 rounded shadow-md"></div>
+                            
+                            <div className="flex justify-between items-center relative z-10 px-2">
+                                {[
+                                    { label: 'W1-1 (Novice)', icon: '🔧', limit: 0 },
+                                    { label: 'W2-1 (Mushroom)', icon: '🍄', limit: 100 },
+                                    { label: 'W3-1 (Peated)', icon: '🔥', limit: 300 },
+                                    { label: 'W4-1 (Star)', icon: '⭐', limit: 600 },
+                                    { label: 'W5-1 (Champion)', icon: '🏰', limit: 1000 }
+                                ].map((node, i) => {
+                                    const isReached = stats.xp >= node.limit;
+                                    return (
+                                        <div key={i} className="flex flex-col items-center">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 shadow-lg transition-all ${
+                                                isReached 
+                                                ? 'bg-gray-950 border-amber-400 text-base scale-110 filter drop-shadow-[0_0_4px_rgba(251,191,36,0.6)]' 
+                                                : 'bg-gray-950 border-gray-850 text-gray-600 text-sm'
+                                            }`}>
+                                                {node.icon}
+                                            </div>
+                                            <span className={`text-[8px] font-bold mt-1 tracking-tighter uppercase ${isReached ? 'text-amber-400' : 'text-gray-600'}`}>{node.label}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            <div 
+                                className="absolute top-1.5 z-20 transition-all duration-1000 ease-out" 
+                                style={{ 
+                                    left: `calc(2% + (${stats.percent}% * 0.88))`, 
+                                    transform: 'translateX(-50%)' 
+                                }}
+                            >
+                                <div className="flex flex-col items-center animate-bounce" style={{ animationDuration: '0.9s' }}>
+                                    <svg width="22" height="22" viewBox="0 0 16 16" fill="none">
+                                        <rect x="3" y="0" width="8" height="2" fill="#ef4444" />
+                                        <rect x="2" y="1" width="11" height="1" fill="#ef4444" />
+                                        <rect x="2" y="2" width="7" height="2" fill="#fbcfe8" />
+                                        <rect x="0" y="2" width="3" height="3" fill="#78350f" />
+                                        <rect x="6" y="2" width="1" height="3" fill="#78350f" />
+                                        <rect x="9" y="3" width="1" height="1" fill="#fbcfe8" />
+                                        <rect x="7" y="4" width="4" height="1" fill="#fbcfe8" />
+                                        <rect x="6" y="5" width="5" height="1" fill="#000000" />
+                                        <rect x="2" y="5" width="10" height="4" fill="#ef4444" />
+                                        <rect x="4" y="8" width="8" height="6" fill="#3b82f6" />
+                                        <rect x="3" y="10" width="10" height="2" fill="#3b82f6" />
+                                        <rect x="5" y="10" width="1" height="1" fill="#fbbf24" />
+                                        <rect x="10" y="10" width="1" height="1" fill="#fbbf24" />
+                                        <rect x="2" y="14" width="3" height="2" fill="#78350f" />
+                                        <rect x="11" y="14" width="3" height="2" fill="#78350f" />
+                                    </svg>
+                                    <div className="px-1 py-0.5 bg-red-650 text-[6px] font-black text-white rounded border border-white mt-0.5 whitespace-nowrap shadow uppercase animate-pulse">Mario</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const renderVirtualShelf = () => {
+                const shelves = [
+                    { title: "⭐ S-Tier Super Shelf", key: 'S', gradient: 'from-yellow-900/40 to-amber-900/10 border-yellow-600/40' },
+                    { title: "🔥 A-Tier Premium Shelf", key: 'A', gradient: 'from-red-900/30 to-gray-900/20 border-red-500/20' },
+                    { title: "🍄 B-Tier Fine Shelf", key: 'B', gradient: 'from-orange-900/20 to-gray-900/10 border-orange-500/20' },
+                    { title: "🧪 C & D Standard Shelf", keys: ['C', 'D'], gradient: 'from-amber-950/20 to-gray-900/10 border-amber-800/20' },
+                    { title: "📦 F & Unranked Cellar", keys: ['F', '-'], gradient: 'from-gray-800/30 to-gray-900/10 border-gray-700/20' }
+                ];
+
+                return (
+                    <div className="space-y-12 animate-in fade-in duration-300">
+                        <div className="bg-[#1a0f0a] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#26170f] to-[#0f0704] p-6 rounded-2xl border border-[#3b2316] shadow-2xl space-y-16">
+                            {shelves.map((sh, idx) => {
+                                const shelfKeys = sh.keys || [sh.key];
+                                const shelfWhiskeys = myWhiskeys.filter(w => shelfKeys.includes(w.tier) || (!w.tier && sh.key === '-'));
+
+                                return (
+                                    <div key={idx} className="relative flex flex-col justify-end min-h-[220px]">
+                                        <h4 className="text-amber-400 font-bold text-xs tracking-wider uppercase mb-4 pl-3 border-l-2 border-amber-600 select-none flex items-center gap-2">
+                                            {sh.title} <span className="text-[10px] font-normal text-gray-500">({shelfWhiskeys.length}병)</span>
+                                        </h4>
+
+                                        <div className="flex flex-wrap items-end gap-x-8 gap-y-10 pl-6 pr-6 pb-2 min-h-[120px] z-10">
+                                            {shelfWhiskeys.length === 0 ? (
+                                                <div className="w-full text-center text-gray-600 italic text-xs py-6 select-none">
+                                                    비어있음 - 보틀을 드래그하거나 티어를 설정하여 진열해보세요.
+                                                </div>
+                                            ) : (
+                                                shelfWhiskeys.map(whiskey => (
+                                                    <div 
+                                                        key={whiskey.id}
+                                                        onClick={() => setTileEditForm({...whiskey})}
+                                                        className="group relative cursor-pointer flex flex-col items-center select-none"
+                                                    >
+                                                        {whiskey.tier === 'S' && (
+                                                            <div className="absolute -top-6 w-full flex justify-center pointer-events-none">
+                                                                <Star size={16} fill="#fbbf24" className="text-yellow-400 filter drop-shadow-[0_0_8px_rgba(251,191,36,0.8)] animate-pulse" />
+                                                            </div>
+                                                        )}
+
+                                                        <div className="w-[85px] h-[130px] relative transition-transform duration-300 group-hover:-translate-y-2 group-hover:scale-105">
+                                                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4/5 h-2 bg-black/60 blur-[3px] rounded-full group-hover:bg-black/40 group-hover:blur-[5px] transition-all"></div>
+                                                            
+                                                            <div className="w-full h-full bg-gradient-to-b from-gray-950/70 to-gray-900/90 border border-gray-800 rounded-t-xl rounded-b-md overflow-hidden flex flex-col items-center justify-center p-1.5 shadow-lg group-hover:border-amber-500/80 transition-colors">
+                                                                {whiskey.image ? (
+                                                                    <img src={whiskey.image} alt={whiskey.name} className="w-full h-3/5 object-contain p-0.5 pointer-events-none" />
+                                                                ) : (
+                                                                    <div className="w-full h-3/5 flex flex-col items-center justify-center text-gray-700 opacity-60">
+                                                                        <svg viewBox="0 0 24 24" className="w-9 h-9" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                                                            <ellipse cx="12" cy="5" rx="6" ry="2.5" />
+                                                                            <path d="M6 5v14c0 1.38 2.69 2.5 6 2.5s6-1.12 6-2.5V5" />
+                                                                            <path d="M6 10c0 1.38 2.69 2.5 6 2.5s6-1.12 6-2.5" />
+                                                                            <path d="M6 15c0 1.38 2.69 2.5 6 2.5s6-1.12 6-2.5" />
+                                                                        </svg>
+                                                                    </div>
+                                                                )}
+                                                                
+                                                                <div className="w-full mt-2 bg-amber-950/80 border-t border-b border-amber-600/20 py-0.5 text-center px-0.5 overflow-hidden">
+                                                                    <p className="text-[8px] font-black text-amber-100 truncate leading-none uppercase tracking-tighter">{whiskey.name || '보틀 정보'}</p>
+                                                                    <span className="text-[6px] text-amber-500 font-mono block leading-none mt-0.5">{whiskey.age ? `${whiskey.age}Y` : 'NAS'}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-gray-950 border border-amber-800/80 text-amber-100 text-[10px] py-1.5 px-2.5 rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-2xl z-45">
+                                                            <p className="font-bold text-xs">{whiskey.name}</p>
+                                                            <p className="text-[10px] text-gray-400 mt-0.5">{whiskey.type || '종류 미상'} • {whiskey.price ? `₩${Number(whiskey.price).toLocaleString()}` : '가격 미상'}</p>
+                                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-950"></div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+
+                                        <div className="relative h-6 w-full z-0 mt-1 select-none pointer-events-none">
+                                            <div className="absolute top-0 w-full h-[5px] bg-gradient-to-r from-emerald-500/30 via-cyan-400/40 to-blue-500/30 border-t border-b border-cyan-300/40 shadow-[0_0_8px_rgba(34,211,238,0.3)]"></div>
+                                            <div className="absolute top-[5px] w-full h-[15px] bg-gradient-to-b from-[#8c5229] to-[#3a1c07] border-b border-amber-950 shadow-2xl rounded-b-md"></div>
+                                            <div className="absolute top-full w-full h-8 bg-black/60 blur-md rounded-full"></div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+            };
+
+            const inputClass = "w-full bg-gray-900 text-amber-50 border border-gray-600 rounded px-2 py-1.5 focus:outline-none focus:border-amber-500 text-sm";
+
+            const renderCabinetTile = () => (
+                <div className="space-y-6 animate-in fade-in duration-300">
+                    <div className="sticky top-4 z-40 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gray-800/95 backdrop-blur-sm p-4 rounded-xl border border-gray-700 shadow-xl">
+                        <div className="flex flex-wrap items-center gap-4 w-full md:w-auto flex-1">
+                            <span className="text-gray-400 text-sm font-medium whitespace-nowrap">총 {myWhiskeys.length}병</span>
+                            <div className="relative flex-1 max-w-md">
+                                <input type="text" placeholder="등록된 위스키 검색 (이름, 카테고리 등)..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-gray-900 border border-gray-700 text-amber-50 rounded-lg pl-9 pr-8 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors" />
+                                <SearchIcon size={16} className="absolute left-3 top-3 text-gray-500" />
+                                {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-3 text-gray-500 hover:text-gray-300 transition-colors"><XIcon size={16} /></button>}
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0">
+                            <input type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
+                            <button onClick={() => fileInputRef.current.click()} className="flex items-center gap-2 text-sm bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2.5 rounded-lg transition-colors font-semibold shadow-sm"><UploadIcon size={18} /> 엑셀 불러오기</button>
+                            <button onClick={handleFileExport} className="flex items-center gap-2 text-sm bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-lg transition-colors font-semibold shadow-sm"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> 엑셀 백업</button>
+                            <button onClick={handleOpenApiModal} className="flex items-center gap-2 text-sm bg-purple-600 hover:bg-purple-500 text-white px-4 py-2.5 rounded-lg transition-colors font-semibold shadow-sm"><Sparkles size={18} /> AI 검색</button>
+                            <button onClick={handleAddRow} className="flex items-center gap-2 text-sm bg-amber-600 hover:bg-amber-500 text-white px-4 py-2.5 rounded-lg transition-colors font-semibold shadow-sm"><Plus size={18} /> 직접 추가</button>
+                        </div>
+                    </div>
+
+                    {sortedWhiskeys.length === 0 ? (
+                        <div className="p-12 text-center text-gray-500 border border-gray-700 border-dashed rounded-xl bg-gray-800/50">
+                            <div className="flex flex-col items-center gap-3">
+                                <LayoutGrid size={48} className="opacity-50" /> 
+                                <p className="text-lg">{searchQuery ? '검색 결과가 없습니다.' : '술장이 비어있습니다. 위스키를 추가하여 나만의 진열장을 채워보세요!'}</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                            {sortedWhiskeys.map(whiskey => (
+                                <div 
+                                    key={whiskey.id} 
+                                    onClick={() => setTileEditForm({...whiskey})} 
+                                    className="bg-gray-800 rounded-xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-amber-500 hover:-translate-y-1 transition-all duration-200 shadow-xl flex flex-col border border-gray-700 group"
+                                >
+                                    <div className="h-56 bg-white flex items-center justify-center relative overflow-hidden">
+                                        {whiskey.image ? (
+                                            <img src={whiskey.image} alt={whiskey.name} className="w-full h-full object-contain p-2 opacity-95 group-hover:opacity-100 transition-opacity" />
+                                        ) : (
+                                            <div className="flex flex-col items-center text-gray-400">
+                                                <ImageIcon size={48} />
+                                                <span className="text-xs font-semibold mt-2 tracking-widest">NO IMAGE</span>
+                                            </div>
+                                        )}
+                                        <span className={`absolute top-3 right-3 px-2.5 py-1 rounded-md text-xs font-black shadow-lg backdrop-blur-md ${whiskey.tier !== '-' ? TIER_COLORS[whiskey.tier] : 'bg-gray-800/80 text-gray-300 border border-gray-600'}`}>
+                                            {whiskey.tier !== '-' ? `${whiskey.tier} Tier` : '미분류'}
+                                        </span>
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                                            <span className="bg-amber-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all">
+                                                <Edit2 size={16}/> 수정하기
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="p-4 flex flex-col flex-1 gap-1">
+                                        <h4 className="font-bold text-lg text-amber-50 leading-tight mb-1 line-clamp-2">{whiskey.name}</h4>
+                                        <div className="text-emerald-400 font-semibold text-sm mb-3">
+                                            {whiskey.price ? `₩${Number(whiskey.price).toLocaleString()}` : '가격 미상'}
+                                        </div>
+                                        <div className="mt-auto pt-3 border-t border-gray-700/50">
+                                            {renderFlavorSummary(whiskey.flavor)}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+
+            const renderCabinetTable = () => (
+                <div className="space-y-4 animate-in fade-in duration-300">
+                    <div className="sticky top-4 z-40 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gray-800/95 backdrop-blur-sm p-4 rounded-xl border border-gray-700 shadow-xl">
+                        <div className="flex flex-wrap items-center gap-4 w-full md:w-auto flex-1">
+                            <div className="flex items-center gap-4 whitespace-nowrap">
+                                <span className="text-gray-400 text-sm font-medium">선택됨: {selectedIds.length}개</span>
+                                {selectedIds.length > 0 && (
+                                    <button onClick={handleBulkDelete} className="flex items-center gap-1.5 text-sm bg-red-500/10 text-red-400 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors border border-red-500/20">
+                                        <Trash2 size={16} /> 일괄 삭제
+                                    </button>
+                                )}
+                            </div>
+                            {selectedIds.length > 0 && (
+                                <div className="text-emerald-400 text-sm font-bold whitespace-nowrap bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20">
+                                    총 가격: ₩{totalSelectedPrice.toLocaleString()}
+                                </div>
+                            )}
+                            <div className="relative flex-1 max-w-md min-w-[200px]">
+                                <input type="text" placeholder="등록된 위스키 검색..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-gray-900 border border-gray-700 text-amber-50 rounded-lg pl-9 pr-8 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors" />
+                                <SearchIcon size={16} className="absolute left-3 top-3 text-gray-500" />
+                                {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-3 text-gray-500 hover:text-gray-300 transition-colors"><XIcon size={16} /></button>}
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0">
+                            <input type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
+                            <button onClick={() => fileInputRef.current.click()} className="flex items-center gap-2 text-sm bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2.5 rounded-lg transition-colors font-semibold shadow-sm"><UploadIcon size={18} /> 엑셀/CSV 불러오기</button>
+                            <button onClick={handleFileExport} className="flex items-center gap-2 text-sm bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-lg transition-colors font-semibold shadow-sm"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> 엑셀 백업</button>
+                            <button onClick={handleOpenApiModal} className="flex items-center gap-2 text-sm bg-purple-600 hover:bg-purple-500 text-white px-4 py-2.5 rounded-lg transition-colors font-semibold shadow-sm"><Sparkles size={18} /> AI 검색</button>
+                            <button onClick={handleAddRow} className="flex items-center gap-2 text-sm bg-amber-600 hover:bg-amber-500 text-white px-4 py-2.5 rounded-lg transition-colors font-semibold shadow-sm"><Plus size={18} /> 직접 추가</button>
+                        </div>
+                    </div>
+
+                    <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden overflow-x-auto shadow-sm">
+                        <table className="w-full text-left text-sm text-gray-300 whitespace-nowrap min-w-[1000px]">
+                            <thead className="text-xs text-gray-400 bg-gray-900/80 uppercase border-b border-gray-700">
+                                <tr>
+                                    <th className="p-4 w-12 text-center"><input type="checkbox" className="accent-amber-500 w-4 h-4 rounded cursor-pointer" checked={myWhiskeys.length > 0 && selectedIds.length === myWhiskeys.length} onChange={handleSelectAll} /></th>
+                                    <th className="p-4 font-semibold w-[16%] cursor-pointer hover:bg-gray-800" onClick={() => handleSort('name')}>이름 {getSortIcon('name')}</th>
+                                    <th className="p-4 font-semibold w-[8%] cursor-pointer hover:bg-gray-800" onClick={() => handleSort('age')}>숙성년수 {getSortIcon('age')}</th>
+                                    <th className="p-4 font-semibold w-[12%] cursor-pointer hover:bg-gray-800" onClick={() => handleSort('type')}>카테고리 {getSortIcon('type')}</th>
+                                    <th className="p-4 font-semibold w-[12%] cursor-pointer hover:bg-gray-800" onClick={() => handleSort('flavor')}>풍미 요소 {getSortIcon('flavor')}</th>
+                                    <th className="p-4 font-semibold w-[10%] cursor-pointer hover:bg-gray-800" onClick={() => handleSort('price')}>가격 {getSortIcon('price')}</th>
+                                    <th className="p-4 font-semibold w-[12%] cursor-pointer hover:bg-gray-800" onClick={() => handleSort('store')}>구매처 {getSortIcon('store')}</th>
+                                    <th className="p-4 font-semibold w-[10%] cursor-pointer hover:bg-gray-800" onClick={() => handleSort('date')}>구입일 {getSortIcon('date')}</th>
+                                    <th className="p-4 font-semibold text-center w-[8%] cursor-pointer hover:bg-gray-800" onClick={() => handleSort('tier')}>티어 {getSortIcon('tier')}</th>
+                                    <th className="p-4 font-semibold text-center w-[10%] cursor-pointer hover:bg-gray-800" onClick={() => handleSort('review')}>시음기 {getSortIcon('review')}</th>
+                                    <th className="p-4 font-semibold text-center w-[8%]">관리</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {sortedWhiskeys.length === 0 ? (
+                                    <tr><td colSpan="11" className="p-12 text-center text-gray-500"><div className="flex flex-col items-center gap-3"><LayoutGrid size={32} /> <p>{searchQuery ? '검색 결과가 없습니다.' : '술장이 비어있습니다.'}</p></div></td></tr>
+                                ) : (
+                                    sortedWhiskeys.map(whiskey => {
+                                        const isEditing = editingId === whiskey.id;
+                                        const isSelected = selectedIds.includes(whiskey.id);
+
+                                        return (
+                                            <tr key={whiskey.id} className={`border-b border-gray-700/50 hover:bg-gray-700/30 transition-colors ${isSelected ? 'bg-amber-900/10' : ''}`}>
+                                                <td className="p-4 text-center"><input type="checkbox" className="accent-amber-500 w-4 h-4 rounded cursor-pointer" checked={isSelected} onChange={() => handleSelect(whiskey.id)} /></td>
+                                                {isEditing ? (
+                                                    <React.Fragment>
+                                                        <td className="p-2"><input className={inputClass} value={editForm.name} onChange={e => handleFormChange('name', e.target.value)} placeholder="이름" autoFocus /></td>
+                                                        <td className="p-2">
+                                                            <select className={inputClass} value={editForm.age} onChange={e => handleAgeChange(e.target.value)}>
+                                                                <option value="">- 선택 -</option>
+                                                                {ages.map(a => <option key={a} value={a}>{a}</option>)}
+                                                                <option value="__MANAGE__" className="font-bold text-gray-400">⚙️ 숙성년수 관리...</option>
+                                                            </select>
+                                                        </td>
+                                                        <td className="p-2"><select className={inputClass} value={editForm.type} onChange={e => handleFormChange('type', e.target.value)}><option value="">- 선택 -</option>{WHISKEY_CATEGORIES.map(t => <option key={t} value={t}>{t}</option>)}</select></td>
+                                                        <td className="p-2">
+                                                            <button onClick={openFlavorModal} className="w-full bg-gray-900 text-amber-400 border border-amber-600/50 hover:bg-gray-800 rounded px-2 py-1.5 focus:outline-none text-sm font-semibold flex items-center justify-between gap-1 transition-colors">
+                                                                <span className="truncate">
+                                                                    {Array.isArray(editForm.flavor) && editForm.flavor.length > 0 
+                                                                        ? `${editForm.flavor.length}개 선택됨` 
+                                                                        : (typeof editForm.flavor === 'string' && editForm.flavor ? editForm.flavor : '풍미 설정...')}
+                                                                </span>
+                                                                <PieChartIcon size={16} />
+                                                            </button>
+                                                        </td>
+                                                        <td className="p-2"><input type="number" className={inputClass} value={editForm.price} onChange={e => handleFormChange('price', e.target.value)} placeholder="가격" /></td>
+                                                        <td className="p-2"><select className={inputClass} value={editForm.store} onChange={e => handleStoreChange(e.target.value)}><option value="">- 선택 -</option>{stores.map(s => <option key={s} value={s}>{s}</option>)}<option value="__MANAGE__" className="font-bold text-gray-400">⚙️ 구매처 관리...</option></select></td>
+                                                        <td className="p-2"><input type="date" className={inputClass} value={editForm.date} onChange={e => handleFormChange('date', e.target.value)} /></td>
+                                                        <td className="p-2"><select className={`${inputClass} text-center font-bold`} value={editForm.tier} onChange={e => handleFormChange('tier', e.target.value)}><option value="-">-</option>{TIERS.map(t => <option key={t} value={t}>{t}</option>)}</select></td>
+                                                        <td className="p-2 text-center text-xs text-gray-500 whitespace-normal leading-tight">저장 후<br/>추가가능</td>
+                                                        <td className="p-2"><div className="flex justify-center gap-3"><button onClick={handleSave} className="text-green-400 bg-green-400/10 p-1.5 rounded"><SaveIcon size={16} /></button><button onClick={() => cancelEdit(whiskey.id)} className="text-gray-400 bg-gray-600/30 p-1.5 rounded"><XIcon size={16} /></button></div></td>
+                                                    </React.Fragment>
+                                                ) : (
+                                                    <React.Fragment>
+                                                        <td className="p-4 font-bold text-amber-50">{whiskey.name}</td>
+                                                        <td className="p-4 text-gray-400">{whiskey.age || '-'}</td>
+                                                        <td className="p-4 text-gray-400">{whiskey.type || '-'}</td>
+                                                        <td className="p-4 text-gray-400">{renderFlavorSummary(whiskey.flavor)}</td>
+                                                        <td className="p-4 text-emerald-400 font-medium">{whiskey.price ? `${Number(whiskey.price).toLocaleString()}원` : '-'}</td>
+                                                        <td className="p-4 text-gray-400">{whiskey.store || '-'}</td>
+                                                        <td className="p-4 text-gray-400">{whiskey.date || '-'}</td>
+                                                        <td className="p-4 text-center"><span className={`inline-block px-2.5 py-1 rounded text-xs font-black shadow-sm ${whiskey.tier !== '-' ? TIER_COLORS[whiskey.tier] : 'bg-gray-700 text-gray-400'}`}>{whiskey.tier !== '-' ? `${whiskey.tier} Tier` : '-'}</span></td>
+                                                        <td className="p-4 text-center">
+                                                            {whiskey.review ? (
+                                                                <button onClick={() => handleOpenReview(whiskey)} onMouseEnter={(e) => handleMouseEnterReview(e, whiskey.review)} onMouseLeave={handleMouseLeaveReview} className="text-xs bg-amber-900/40 border border-amber-700/50 text-amber-300 hover:bg-amber-900/60 px-3 py-1.5 rounded transition-colors">수정/보기</button>
+                                                            ) : (
+                                                                <button onClick={() => handleOpenReview(whiskey)} className="text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-1.5 rounded transition-colors shadow-sm">+ 추가</button>
+                                                            )}
+                                                        </td>
+                                                        <td className="p-4"><div className="flex justify-center gap-3 opacity-60 hover:opacity-100 transition-opacity"><button onClick={() => startEdit(whiskey)} className="text-gray-300 hover:text-amber-400"><Edit2 size={18} /></button><button onClick={() => handleSingleDelete(whiskey.id)} className="text-gray-300 hover:text-red-400"><Trash2 size={18} /></button></div></td>
+                                                    </React.Fragment>
+                                                )}
+                                            </tr>
+                                        )
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+
+            const renderTierBoard = () => {
+                const tierGroups = TIERS.reduce((acc, tier) => { acc[tier] = myWhiskeys.filter(w => w.tier === tier); return acc; }, {});
+                const unranked = myWhiskeys.filter(w => w.tier === '-' || !TIERS.includes(w.tier));
+
+                return (
+                    <div className="space-y-6 animate-in fade-in duration-300">
+                        {TIERS.map(tier => (
+                            <div 
+                                key={tier} 
+                                className="flex flex-col md:flex-row gap-0 md:gap-4 bg-gray-800 rounded-xl overflow-hidden border border-gray-700 shadow-sm transition-colors hover:bg-gray-750"
+                                onDragOver={handleDragOver}
+                                onDrop={(e) => handleDrop(e, tier)}
+                            >
+                                <div className={`w-full md:w-24 flex items-center justify-center p-4 font-black text-3xl ${TIER_COLORS[tier]}`}>{tier}</div>
+                                <div className="flex-1 p-4 flex flex-wrap gap-3 min-h-[80px]">
+                                    {tierGroups[tier].length === 0 ? (
+                                        <span className="text-gray-500 flex items-center h-full text-sm italic select-none pointer-events-none">이곳으로 드래그하여 추가해보세요.</span>
+                                    ) : tierGroups[tier].map(whiskey => (
+                                        <div 
+                                            key={whiskey.id} 
+                                            draggable
+                                            onDragStart={(e) => handleDragStart(e, whiskey.id)}
+                                            data-whiskey-id={whiskey.id}
+                                            className="bg-gray-900 border border-gray-600 rounded-lg p-2 pr-4 flex items-center gap-3 w-full sm:w-auto shadow-sm cursor-grab active:cursor-grabbing hover:border-amber-500 transition-colors"
+                                        >
+                                            <div className="w-10 h-10 shrink-0 bg-white rounded-md overflow-hidden flex items-center justify-center border border-gray-700 pointer-events-none">
+                                                {whiskey.image ? (
+                                                    <img src={whiskey.image} alt={whiskey.name} className="w-full h-full object-contain p-0.5" />
+                                                ) : (
+                                                    <ImageIcon size={20} className="text-gray-300" />
+                                                )}
+                                            </div>
+                                            <h5 className="font-semibold text-amber-50 text-sm whitespace-nowrap pointer-events-none">{whiskey.name}</h5>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                        <div 
+                            className="mt-8 border-t border-gray-800 pt-6"
+                            onDragOver={handleDragOver}
+                            onDrop={(e) => handleDrop(e, '-')}
+                        >
+                            <h3 className="text-base font-semibold text-gray-400 mb-4 flex items-center gap-2">
+                                <ListIcon size={18} /> 티어 미정 ({unranked.length})
+                                <span className="text-xs font-normal text-gray-500 ml-2 select-none pointer-events-none">(여기로 드래그하면 티어가 해제됩니다)</span>
+                            </h3>
+                            <div className="flex flex-wrap gap-3 min-h-[80px] p-4 bg-gray-900/50 rounded-xl border border-dashed border-gray-700">
+                                {unranked.length === 0 ? (
+                                    <span className="text-gray-600 flex items-center h-full text-sm italic select-none pointer-events-none">모든 위스키가 분류되었습니다.</span>
+                                ) : unranked.map(whiskey => (
+                                    <div 
+                                        key={whiskey.id} 
+                                        draggable
+                                        onDragStart={(e) => handleDragStart(e, whiskey.id)}
+                                        data-whiskey-id={whiskey.id}
+                                        className="bg-gray-800/80 border border-gray-600 rounded-lg p-2 pr-4 flex items-center gap-3 w-full sm:w-auto shadow-sm cursor-grab active:cursor-grabbing hover:border-amber-500 transition-colors"
+                                    >
+                                        <div className="w-8 h-8 shrink-0 bg-white rounded-md overflow-hidden flex items-center justify-center border border-gray-600 pointer-events-none">
+                                            {whiskey.image ? (
+                                                <img src={whiskey.image} alt={whiskey.name} className="w-full h-full object-contain p-0.5" />
+                                            ) : (
+                                                <ImageIcon size={16} className="text-gray-300" />
+                                            )}
+                                        </div>
+                                        <span className="text-sm text-gray-300 whitespace-nowrap pointer-events-none">{whiskey.name}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            return (
+                <div>
+                    {isFirebaseActive && !user && !isAuthChecking && !isGuestMode && (
+                        <AuthScreen onGuestMode={() => { playMarioSound('coin'); setIsGuestMode(true); }} />
+                    )}
+
+                    {isCloudSyncing && (
+                        <div className="fixed top-4 left-4 z-[99] bg-gray-900/95 border border-amber-500/50 px-4 py-2.5 rounded-xl flex items-center gap-2.5 shadow-[0_0_20px_rgba(245,158,11,0.2)] text-xs font-bold text-amber-400 animate-pulse">
+                            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
+                            <span>☁️ 클라우드 동기화 중...</span>
+                        </div>
+                    )}
+
+                    <header className="w-full bg-[#120a07] border-b border-amber-900/30 flex justify-center shadow-2xl relative group min-h-[64px]">
+                        <div className="absolute top-4 right-4 z-30 flex items-center gap-2">
+                            {/* Cloud Sync Status Indicator & Auth Button */}
+                            {isFirebaseActive ? (
+                                user ? (
+                                    <div className="flex items-center gap-2 bg-gray-900/90 border border-emerald-500/40 px-3 py-1 rounded-lg shadow backdrop-blur-md">
+                                        {user.photoURL ? (
+                                            <img src={user.photoURL} alt="profile" className="w-5 h-5 rounded-full border border-emerald-400" />
+                                        ) : (
+                                            <span className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-[10px] text-white font-bold select-none">M</span>
+                                        )}
+                                        <span className="text-[10px] font-bold text-emerald-400 hidden sm:inline-block max-w-[80px] truncate">{user.displayName || user.email.split('@')[0]}</span>
+                                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        <button 
+                                            onClick={() => {
+                                                playMarioSound('delete'); // Game Over style chime on logout!
+                                                auth.signOut();
+                                            }}
+                                            className="ml-1 text-[9px] bg-red-650 hover:bg-red-550 border border-red-500/40 text-white px-2 py-0.5 rounded font-black transition-colors"
+                                        >
+                                            로그아웃
+                                        </button>
+                                    </div>
+                                ) : (
+                                    isGuestMode && (
+                                        <button 
+                                            onClick={() => { setIsGuestMode(false); playMarioSound('coin'); }}
+                                            className="px-3 py-1.5 bg-amber-600/90 hover:bg-amber-500 text-white rounded-lg shadow text-xs font-semibold flex items-center gap-1 border border-amber-500 transition-colors animate-pulse"
+                                        >
+                                            ☁️ 로그인
+                                        </button>
+                                    )
+                                )
+                            ) : null}
+
+                            <button onClick={() => { playMarioSound('coin'); setFirebaseConfigModal(true); }} className={`px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 border rounded-lg shadow transition-colors bg-gray-800/80 border-gray-650 text-gray-300 hover:bg-gray-700`}>
+                                ☁️ {isFirebaseActive ? '클라우드 활성' : '클라우드 설정'}
+                            </button>
+
+                            <button onClick={toggleMute} className="px-3 py-1.5 bg-gray-800/80 backdrop-blur-md text-gray-300 rounded-lg shadow hover:bg-gray-700 text-xs font-semibold flex items-center gap-1.5 border border-gray-600 transition-colors">
+                                {muted ? '🔇 소리 끔' : '🔊 소리 켬'}
+                            </button>
+                            <button onClick={() => setApiKeyModal({ isOpen: true, keyInput: localStorage.getItem('gemini_api_key') || '' })} className="px-3 py-1.5 bg-gray-800/80 backdrop-blur-md text-gray-300 rounded-lg shadow hover:bg-gray-700 text-xs font-semibold flex items-center gap-1.5 border border-gray-600 transition-colors">
+                                🔑 API 키 설정
+                            </button>
+                        </div>
+                        
+                        {bannerImage ? (
+                            <React.Fragment>
+                                <img src={bannerImage} alt="메인 배너" className="w-full max-w-5xl h-auto object-contain opacity-95 transition-opacity" />
+                                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity gap-3">
+                                    <button onClick={() => bannerInputRef.current.click()} className="px-5 py-2.5 bg-gray-800 text-white rounded-lg shadow-lg hover:bg-gray-700 text-sm font-semibold flex items-center gap-2 transition-colors"><ImageIcon size={18}/> 변경</button>
+                                    <button onClick={handleRemoveBanner} className="px-5 py-2.5 bg-red-900/80 text-white rounded-lg shadow-lg hover:bg-red-800 text-sm font-semibold flex items-center gap-2 transition-colors"><Trash2 size={18}/> 삭제</button>
+                                </div>
+                            </React.Fragment>
+                        ) : (
+                            <div className="flex items-center justify-center w-full max-w-5xl h-32 border-2 border-dashed border-gray-700 m-4 rounded-xl hover:border-amber-500 cursor-pointer transition-colors bg-gray-900/50" onClick={() => bannerInputRef.current.click()}>
+                                <span className="text-gray-400 font-medium flex items-center gap-2"><ImageIcon size={22}/> 배너 등록</span>
+                            </div>
+                        )}
+                        <input type="file" accept="image/*" ref={bannerInputRef} className="hidden" onChange={handleBannerUpload} />
+                    </header>
+
+                    <main className="max-w-[1500px] mx-auto px-4 py-8 relative">
+                        {renderMarioDashboard()}
+
+                        <div className="flex space-x-2 bg-gray-900 p-1.5 rounded-xl mb-8 border border-gray-800 w-full max-w-2xl mx-auto shadow-lg">
+                            <button onClick={() => { playMarioSound('coin'); setActiveTab('cabinet_tile'); }} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 ${activeTab === 'cabinet_tile' ? 'bg-gray-800 text-amber-400 shadow' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'}`}>
+                                <LayoutGrid size={16} /> 내 술장 (타일)
+                            </button>
+                            <button onClick={() => { playMarioSound('coin'); setActiveTab('cabinet_shelf'); }} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 ${activeTab === 'cabinet_shelf' ? 'bg-gray-800 text-amber-400 shadow' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'}`}>
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg> 나만의 진열장
+                            </button>
+                            <button onClick={() => { playMarioSound('coin'); setActiveTab('cabinet_list'); }} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 ${activeTab === 'cabinet_list' ? 'bg-gray-800 text-amber-400 shadow' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'}`}>
+                                <TableIcon size={16} /> 데이터 테이블
+                            </button>
+                            <button onClick={() => { playMarioSound('coin'); setActiveTab('tier'); }} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 ${activeTab === 'tier' ? 'bg-gray-800 text-amber-400 shadow' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'}`}>
+                                <ListIcon size={16} /> 티어 보드
+                            </button>
+                        </div>
+                        
+                        {activeTab === 'cabinet_tile' && renderCabinetTile()}
+                        {activeTab === 'cabinet_shelf' && renderVirtualShelf()}
+                        {activeTab === 'cabinet_list' && renderCabinetTable()}
+                        {activeTab === 'tier' && renderTierBoard()}
+                    </main>
+
+                    {tileEditForm && (
+                        <div className="fixed inset-0 z-[50] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4 py-6 overflow-y-auto">
+                            <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col md:flex-row overflow-hidden max-h-full animate-in zoom-in-95 duration-200">
+                                
+                                <div className="md:w-2/5 bg-gray-950 flex flex-col border-b md:border-b-0 md:border-r border-gray-850 p-6 justify-between min-h-[350px]">
+                                    <div 
+                                        className="w-full h-56 bg-white relative cursor-pointer group flex items-center justify-center rounded-xl overflow-hidden border border-gray-850"
+                                        onClick={() => tileImageRef.current.click()}
+                                    >
+                                        {tileEditForm.image ? (
+                                            <img src={tileEditForm.image} alt="위스키 이미지" className="w-full h-full object-contain p-2 opacity-95 group-hover:opacity-60 transition-opacity" />
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center text-gray-500 group-hover:text-amber-500 transition-colors">
+                                                <CameraIcon size={44} className="mb-2" />
+                                                <span className="font-semibold text-xs tracking-wide">위스키 사진 등록</span>
+                                            </div>
+                                        )}
+                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center pointer-events-none">
+                                            <UploadIcon size={24} className="text-white mb-1" />
+                                            <span className="text-white text-xs font-bold">이미지 변경</span>
+                                        </div>
+                                        <input type="file" accept="image/*" className="hidden" ref={tileImageRef} onChange={handleTileImageUpload} />
+                                    </div>
+                                    
+                                    {/* Flavor Radar Chart */}
+                                    <div className="mt-6 flex-1 flex flex-col items-center justify-center">
+                                        <span className="text-[10px] uppercase font-bold text-amber-500/80 mb-2.5 tracking-wider select-none">나만의 테이스팅 시그니처</span>
+                                        <TastingRadarChart flavorData={tileEditForm.flavor} size={210} />
+                                    </div>
+                                </div>
+
+                                <div className="md:w-3/5 p-6 flex flex-col overflow-y-auto bg-gray-900">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <div className="flex items-center gap-3">
+                                            <h3 className="text-xl font-bold text-amber-50 flex items-center gap-2">
+                                                <Edit2 size={20} className="text-amber-500"/> 위스키 정보 수정
+                                            </h3>
+                                        </div>
+                                        <button onClick={() => handleSingleDelete(tileEditForm.id)} className="text-red-400 hover:text-red-300 bg-red-400/10 hover:bg-red-400/20 px-3 py-1.5 rounded text-sm transition-colors flex items-center gap-1">
+                                            <Trash2 size={16}/> 이 위스키 삭제
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-5">
+                                        <div className="sm:col-span-2">
+                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">위스키 이름</label>
+                                            <input className={`${inputClass} py-2.5 text-base font-bold`} value={tileEditForm.name} onChange={e => setTileEditForm({...tileEditForm, name: e.target.value})} placeholder="예) 맥캘란 12년 더블캐스크" />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">카테고리</label>
+                                            <select className={`${inputClass} py-2.5`} value={tileEditForm.type} onChange={e => setTileEditForm({...tileEditForm, type: e.target.value})}>
+                                                <option value="">- 선택 -</option>{WHISKEY_CATEGORIES.map(t => <option key={t} value={t}>{t}</option>)}
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">숙성년수</label>
+                                            <select className={`${inputClass} py-2.5`} value={tileEditForm.age} onChange={e => handleAgeChange(e.target.value)}>
+                                                <option value="">- 선택 -</option>
+                                                {ages.map(a => <option key={a} value={a}>{a}</option>)}
+                                                <option value="__MANAGE__" className="font-bold text-gray-400">⚙️ 숙성년수 관리...</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">티어 (등급)</label>
+                                            <select className={`${inputClass} py-2.5 font-bold text-center ${tileEditForm.tier !== '-' ? 'text-amber-400 bg-amber-900/20 border-amber-500/50' : ''}`} value={tileEditForm.tier} onChange={e => setTileEditForm({...tileEditForm, tier: e.target.value})}>
+                                                <option value="-">- 미분류 -</option>{TIERS.map(t => <option key={t} value={t}>{t} Tier</option>)}
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">가격 (원)</label>
+                                            <input type="number" className={`${inputClass} py-2.5`} value={tileEditForm.price} onChange={e => setTileEditForm({...tileEditForm, price: e.target.value})} placeholder="숫자만 입력" />
+                                        </div>
+                                        
+                                        <div className="sm:col-span-2">
+                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">풍미 카테고리 설정</label>
+                                            <button onClick={openFlavorModal} className="w-full bg-gray-800 text-amber-400 border border-amber-600/50 hover:bg-gray-700 rounded-lg px-4 py-3 focus:outline-none text-sm font-semibold flex items-center justify-between transition-colors shadow-sm">
+                                                <span className="truncate">
+                                                    {Array.isArray(tileEditForm.flavor) && tileEditForm.flavor.length > 0 
+                                                        ? `${tileEditForm.flavor.map(f=>f.name).join(', ')} 등 ${tileEditForm.flavor.length}가지 풍미 선택됨` 
+                                                        : (typeof tileEditForm.flavor === 'string' && tileEditForm.flavor ? tileEditForm.flavor : '여기를 클릭하여 풍미 카테고리를 선택하세요')}
+                                                </span>
+                                                <LayoutGrid size={20} />
+                                            </button>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">구매처</label>
+                                            <select className={`${inputClass} py-2`} value={tileEditForm.store} onChange={e => handleStoreChange(e.target.value)}>
+                                                <option value="">- 선택 -</option>{stores.map(s => <option key={s} value={s}>{s}</option>)}
+                                                <option value="__MANAGE__" className="font-bold text-gray-400">⚙️ 구매처 관리...</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">구입일</label>
+                                            <input type="date" className={`${inputClass} py-2`} value={tileEditForm.date} onChange={e => setTileEditForm({...tileEditForm, date: e.target.value})} />
+                                        </div>
+
+                                        <div className="sm:col-span-2 mt-2">
+                                            <div className="flex justify-between items-end mb-1.5">
+                                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">나만의 시음기</label>
+                                            </div>
+                                            <textarea className={`${inputClass} py-3 h-24 resize-none leading-relaxed`} value={tileEditForm.review} onChange={e => setTileEditForm({...tileEditForm, review: e.target.value})} placeholder="자신만의 시음기를 자유롭게 기록해보세요." />
+                                        </div>
+
+                                        {/* AI mixology and pairing helper panels */}
+                                        <div className="sm:col-span-2 mt-3 grid grid-cols-2 gap-3">
+                                            <button 
+                                                onClick={handleGenerateAICocktail} 
+                                                disabled={isGeneratingCocktail}
+                                                className="py-2 px-3 bg-purple-900/40 hover:bg-purple-900/60 disabled:opacity-50 text-purple-200 border border-purple-700/40 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                                            >
+                                                <Sparkles size={13} className="text-purple-400" />
+                                                {isGeneratingCocktail ? '칵테일 믹싱 중...' : '🍸 마리오 테마 칵테일'}
+                                            </button>
+                                            <button 
+                                                onClick={handleGenerateAIPairing} 
+                                                disabled={isGeneratingPairing}
+                                                className="py-2 px-3 bg-emerald-900/40 hover:bg-emerald-900/60 disabled:opacity-50 text-emerald-200 border border-emerald-700/40 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                                            >
+                                                <Sparkles size={13} className="text-emerald-400" />
+                                                {isGeneratingPairing ? '안주 어울림 분석 중...' : '🍱 어울리는 안주 추천'}
+                                            </button>
+                                        </div>
+
+                                        {aiCocktail && (
+                                            <div className="sm:col-span-2 bg-purple-950/40 border border-purple-800/30 p-3.5 rounded-xl mt-2 animate-in slide-in-from-top-3 duration-200">
+                                                <div className="flex justify-between items-center mb-1.5">
+                                                    <span className="text-[9px] font-black text-purple-400 uppercase tracking-widest">🍸 AI 마리오 테마 칵테일</span>
+                                                    <button 
+                                                        onClick={() => {
+                                                            setTileEditForm(prev => ({ ...prev, review: prev.review ? prev.review + '\n\n' + aiCocktail : aiCocktail }));
+                                                            setAiCocktail('');
+                                                            playMarioSound('coin');
+                                                        }}
+                                                        className="text-[9px] text-purple-300 hover:text-white bg-purple-850 border border-purple-700/40 px-2 py-0.5 rounded font-bold transition-colors"
+                                                    >
+                                                        시음기에 추가 ➕
+                                                    </button>
+                                                </div>
+                                                <p className="text-xs text-gray-300 whitespace-pre-wrap leading-relaxed">{aiCocktail}</p>
+                                            </div>
+                                        )}
+
+                                        {aiPairing && (
+                                            <div className="sm:col-span-2 bg-emerald-950/40 border border-emerald-800/30 p-3.5 rounded-xl mt-2 animate-in slide-in-from-top-3 duration-200">
+                                                <div className="flex justify-between items-center mb-1.5">
+                                                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">🍱 AI 푸드 페어링 추천</span>
+                                                    <button 
+                                                        onClick={() => {
+                                                            setTileEditForm(prev => ({ ...prev, review: prev.review ? prev.review + '\n\n' + aiPairing : aiPairing }));
+                                                            setAiPairing('');
+                                                            playMarioSound('coin');
+                                                        }}
+                                                        className="text-[9px] text-emerald-300 hover:text-white bg-emerald-850 border border-emerald-700/40 px-2 py-0.5 rounded font-bold transition-colors"
+                                                    >
+                                                        시음기에 추가 ➕
+                                                    </button>
+                                                </div>
+                                                <p className="text-xs text-gray-300 whitespace-pre-wrap leading-relaxed">{aiPairing}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    <div className="mt-8 flex gap-3 pt-5 border-t border-gray-800">
+                                        <button onClick={cancelTileEdit} className="w-1/3 py-3 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 font-semibold transition-colors">취소</button>
+                                        <button onClick={handleSaveTileEdit} className="w-2/3 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-500 font-bold shadow-lg transition-colors flex justify-center items-center gap-2">
+                                            <SaveIcon size={20}/> 위스키 정보 저장
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+
+                    {flavorModal.isOpen && (
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md px-4 py-6">
+                            <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col md:flex-row overflow-hidden max-h-full animate-in zoom-in-95 duration-200">
+                                
+                                <div className="p-6 w-full md:w-2/3 flex flex-col border-b md:border-b-0 md:border-r border-gray-700 bg-gray-950/50 h-[55vh] md:h-[75vh]">
+                                    <h3 className="text-lg font-bold text-amber-50 mb-4 flex items-center gap-2 shrink-0">
+                                        <LayoutGrid size={20} className="text-amber-400" /> 세부 풍미 선택
+                                    </h3>
+                                    
+                                    <div className="flex-1 overflow-y-auto pr-4 space-y-8 custom-scrollbar pb-8">
+                                        {FLAVOR_CATEGORIES.map(mainCat => (
+                                            <div key={mainCat.category} className="space-y-4">
+                                                <h4 className="font-bold text-lg border-b border-gray-800 pb-2 flex items-center gap-2" style={{color: mainCat.color}}>
+                                                    <span className="w-3 h-3 rounded-full" style={{backgroundColor: mainCat.color}}></span>
+                                                    {mainCat.category}
+                                                </h4>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    {mainCat.subCategories.map(subCat => (
+                                                        <div key={subCat.name} className="bg-gray-900/50 rounded-lg p-3 border border-gray-800">
+                                                            <h5 className="text-sm font-semibold text-gray-400 mb-2.5">{subCat.name}</h5>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {subCat.items.map(item => {
+                                                                    const isSelected = flavorModal.items.some(i => i.name === item);
+                                                                    return (
+                                                                        <button
+                                                                            key={item}
+                                                                            onClick={() => toggleFlavorSelection(item, mainCat.color)}
+                                                                            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 border ${
+                                                                                isSelected
+                                                                                ? 'text-gray-900 shadow-md transform scale-105'
+                                                                                : 'bg-gray-800 text-gray-300 border-gray-700 hover:border-gray-500 hover:bg-gray-700'
+                                                                            }`}
+                                                                            style={{
+                                                                                backgroundColor: isSelected ? mainCat.color : undefined,
+                                                                                borderColor: isSelected ? mainCat.color : undefined
+                                                                            }}
+                                                                        >
+                                                                            {item}
+                                                                        </button>
+                                                                    )
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-4 text-center shrink-0">원하는 타일을 클릭하여 다중 선택하세요.</p>
+                                </div>
+
+                                <div className="p-6 w-full md:w-1/3 flex flex-col bg-gray-900 h-[40vh] md:h-[75vh]">
+                                    <h3 className="text-lg font-bold text-amber-50 mb-4 flex justify-between items-center shrink-0">
+                                        <div className="flex items-center gap-2">
+                                            <span>비율 설정</span>
+                                        </div>
+                                        <span className="text-sm text-gray-400 font-normal">총 100%</span>
+                                    </h3>
+                                    
+                                    <div className="flex-1 overflow-y-auto pr-2 space-y-6">
+                                        {flavorModal.items.length === 0 ? (
+                                            <div className="h-full flex flex-col items-center justify-center text-gray-500 opacity-50">
+                                                <PieChartIcon size={48} className="mb-2" />
+                                                <p className="text-sm">왼쪽 목록에서 타일을 선택하여</p>
+                                                <p className="text-sm">나만의 풍미 구성을 완성하세요.</p>
+                                            </div>
+                                        ) : (
+                                            flavorModal.items.map((item, idx) => (
+                                                <div key={item.name} className="animate-in fade-in slide-in-from-right-4 duration-300">
+                                                    <div className="flex justify-between items-end mb-2">
+                                                        <span className="text-sm font-bold text-gray-200 flex items-center gap-2">
+                                                            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></span>
+                                                            {item.name}
+                                                        </span>
+                                                        <span className="text-lg font-mono font-bold" style={{ color: item.color }}>{item.value}%</span>
+                                                    </div>
+                                                    <input 
+                                                        type="range" min="0" max="100" 
+                                                        value={item.value} 
+                                                        onChange={(e) => handleFlavorSliderChange(idx, Number(e.target.value))}
+                                                        className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                                                        style={{ background: `linear-gradient(to right, ${item.color} ${item.value}%, #374151 ${item.value}%)` }}
+                                                    />
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+
+                                    <div className="mt-6 flex gap-3 pt-4 border-t border-gray-800 shrink-0">
+                                        <button onClick={() => setFlavorModal({isOpen: false, items: [], whiskeyName: ''})} className="flex-1 py-3 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 font-semibold transition-colors">취소</button>
+                                        <button onClick={saveFlavorSelection} className="flex-1 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-500 font-bold shadow-lg transition-colors">저장하기</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {hoverReview.visible && (
+                        <div className="fixed z-[100] w-72 p-4 bg-gray-900 border border-amber-700/50 rounded-xl shadow-2xl pointer-events-none transform -translate-x-1/2 -translate-y-full animate-in fade-in duration-150" style={{ top: hoverReview.y, left: hoverReview.x }}>
+                            <div className="flex items-center gap-2 mb-2 border-b border-gray-700 pb-2"><Edit2 size={14} className="text-amber-400" /><span className="text-xs font-bold text-amber-400">시음기 요약</span></div>
+                            <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed break-keep line-clamp-[8]">{hoverReview.text}</p>
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-[8px] border-transparent border-t-amber-700/50"></div>
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-[7px] border-transparent border-t-gray-900 -mt-[2px]"></div>
+                        </div>
+                    )}
+
+                    {ageManageModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-10">
+                            <div className="bg-gray-900 border border-gray-700 p-6 rounded-xl shadow-2xl max-w-sm w-full flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-lg font-bold text-amber-50">⚙️ 숙성년수 관리</h3>
+                                    <button onClick={() => setAgeManageModal(false)} className="text-gray-400 hover:text-white"><XIcon size={20}/></button>
+                                </div>
+                                <div className="flex gap-2 mb-4">
+                                    <input type="text" className="flex-1 bg-gray-800 text-amber-50 border border-gray-600 rounded-lg px-3 py-2 focus:border-amber-500" placeholder="예: NAS, 15, 25" value={newAgeInput} onChange={(e) => setNewAgeInput(e.target.value)} onKeyDown={(e) => { if(e.key === 'Enter') handleAddAge(); }} />
+                                    <button onClick={handleAddAge} className="bg-amber-600 text-white px-3 py-2 rounded-lg font-semibold">추가</button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">
+                                    {ages.map((age, index) => (
+                                        <div 
+                                            key={age} 
+                                            draggable
+                                            onDragStart={(e) => handleAgeDragStart(e, index)}
+                                            onDragOver={handleAgeDragOver}
+                                            onDrop={(e) => handleAgeDrop(e, index)}
+                                            className="flex justify-between items-center bg-gray-800 px-3 py-2.5 rounded-lg border border-gray-700 cursor-grab active:cursor-grabbing hover:border-amber-500 hover:bg-gray-750 transition-colors group"
+                                        >
+                                            <div className="flex items-center gap-2 pointer-events-none">
+                                                <GripVertical size={14} className="text-gray-500 opacity-40 group-hover:opacity-100 transition-opacity" />
+                                                <span className="text-sm text-amber-50">{age}</span>
+                                            </div>
+                                            <button onClick={() => setAges(prev => prev.filter(item => item !== age))} className="text-gray-500 hover:text-red-400 transition-colors p-1">
+                                                <XIcon size={16} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <button onClick={() => setAgeManageModal(false)} className="w-full py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-700 font-semibold mt-2">닫기</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {storeManageModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-10">
+                            <div className="bg-gray-900 border border-gray-700 p-6 rounded-xl shadow-2xl max-w-sm w-full flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200">
+                                <div className="flex justify-between items-center mb-4"><h3 className="text-lg font-bold text-amber-50">⚙️ 구매처 관리</h3><button onClick={() => setStoreManageModal(false)} className="text-gray-400 hover:text-white"><XIcon size={20}/></button></div>
+                                <div className="flex gap-2 mb-4"><input type="text" className="flex-1 bg-gray-800 text-amber-50 border border-gray-600 rounded-lg px-3 py-2 focus:border-amber-500" placeholder="새 구매처 이름" value={newStoreInput} onChange={(e) => setNewStoreInput(e.target.value)} onKeyDown={(e) => { if(e.key === 'Enter') handleAddStore(); }} /><button onClick={handleAddStore} className="bg-amber-600 text-white px-3 py-2 rounded-lg font-semibold">추가</button></div>
+                                <div className="flex-1 overflow-y-auto space-y-2 mb-4">
+                                    {stores.map(store => (<div key={store} className="flex justify-between items-center bg-gray-800 px-3 py-2.5 rounded-lg border border-gray-700"><span className="text-sm text-amber-50">{store}</span><button onClick={() => setStores(prev => prev.filter(item => item !== store))} className="text-gray-500 hover:text-red-400"><XIcon size={16} /></button></div>))}
+                                </div>
+                                <button onClick={() => setStoreManageModal(false)} className="w-full py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-700 font-semibold">닫기</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {reviewModal.isOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+                            <div className="bg-gray-900 border border-gray-700 p-6 rounded-xl shadow-2xl max-w-lg w-full flex flex-col h-[50vh] animate-in zoom-in-95">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-lg font-bold text-amber-50 flex items-center gap-2"><Edit2 size={18} /> 시음기</h3>
+                                    <button 
+                                        onClick={handleGenerateAIReview} 
+                                        disabled={reviewModal.isGenerating}
+                                        className="text-xs bg-purple-600/20 text-purple-400 hover:bg-purple-600/40 border border-purple-500/30 px-3 py-1.5 rounded transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                                    >
+                                        <Sparkles size={14} className={reviewModal.isGenerating ? "animate-spin" : ""} /> 
+                                        {reviewModal.isGenerating ? 'AI가 시음기 고민 중...' : '✨ AI 자동 작성'}
+                                    </button>
+                                </div>
+                                <textarea className={`flex-1 bg-gray-800 text-amber-50 border border-gray-600 rounded-lg p-4 focus:border-amber-500 resize-none leading-relaxed transition-opacity ${reviewModal.isGenerating ? 'opacity-50' : 'opacity-100'}`} value={reviewModal.text} onChange={(e) => setReviewModal({ ...reviewModal, text: e.target.value })} autoFocus placeholder="자신만의 시음기를 자유롭게 기록해보세요." disabled={reviewModal.isGenerating} />
+                                <div className="flex justify-end gap-3 mt-4"><button onClick={() => setReviewModal({ isOpen: false, whiskeyId: null, text: '', isGenerating: false })} className="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg disabled:opacity-50" disabled={reviewModal.isGenerating}>취소</button><button onClick={handleSaveReview} className="px-4 py-2 bg-amber-600 text-white rounded-lg font-medium disabled:opacity-50" disabled={reviewModal.isGenerating}>저장</button></div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Firebase Cloud Config Modal */}
+                    {firebaseConfigModal && (
+                        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
+                            <div className="bg-gray-900 border border-amber-600/50 p-6 rounded-xl shadow-2xl max-w-md w-full animate-in zoom-in-95">
+                                <h3 className="text-xl font-bold text-amber-50 mb-3 flex items-center gap-2">☁️ Firebase 클라우드 연동 설정</h3>
+                                <p className="text-gray-300 text-sm mb-4 leading-relaxed">
+                                    Firebase 프로젝트의 웹 앱 설정을 입력하여 클라우드 실시간 동기화를 활성화하세요.<br/>
+                                    공란으로 둘 경우 <strong>로컬 오프라인 모드(localStorage)</strong>로 실행됩니다.
+                                </p>
+                                <div className="space-y-3 mb-6">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">API Key</label>
+                                        <input type="text" className="w-full bg-gray-800 text-amber-50 border border-gray-700 rounded-lg py-1.5 px-3 focus:border-amber-500 outline-none text-xs" value={firebaseConfigInput.apiKey} onChange={e => setFirebaseConfigInput({...firebaseConfigInput, apiKey: e.target.value})} placeholder="AIzaSy..." />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Auth Domain</label>
+                                        <input type="text" className="w-full bg-gray-800 text-amber-50 border border-gray-700 rounded-lg py-1.5 px-3 focus:border-amber-500 outline-none text-xs" value={firebaseConfigInput.authDomain} onChange={e => setFirebaseConfigInput({...firebaseConfigInput, authDomain: e.target.value})} placeholder="project-id.firebaseapp.com" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Project ID</label>
+                                        <input type="text" className="w-full bg-gray-800 text-amber-50 border border-gray-700 rounded-lg py-1.5 px-3 focus:border-amber-500 outline-none text-xs" value={firebaseConfigInput.projectId} onChange={e => setFirebaseConfigInput({...firebaseConfigInput, projectId: e.target.value})} placeholder="project-id" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Storage Bucket</label>
+                                        <input type="text" className="w-full bg-gray-800 text-amber-50 border border-gray-700 rounded-lg py-1.5 px-3 focus:border-amber-500 outline-none text-xs" value={firebaseConfigInput.storageBucket} onChange={e => setFirebaseConfigInput({...firebaseConfigInput, storageBucket: e.target.value})} placeholder="project-id.appspot.com" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Messaging Sender ID</label>
+                                        <input type="text" className="w-full bg-gray-800 text-amber-50 border border-gray-700 rounded-lg py-1.5 px-3 focus:border-amber-500 outline-none text-xs" value={firebaseConfigInput.messagingSenderId} onChange={e => setFirebaseConfigInput({...firebaseConfigInput, messagingSenderId: e.target.value})} placeholder="123456789012" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">App ID</label>
+                                        <input type="text" className="w-full bg-gray-800 text-amber-50 border border-gray-700 rounded-lg py-1.5 px-3 focus:border-amber-500 outline-none text-xs" value={firebaseConfigInput.appId} onChange={e => setFirebaseConfigInput({...firebaseConfigInput, appId: e.target.value})} placeholder="1:1234:web:abcd" />
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <button 
+                                        type="button"
+                                        onClick={() => {
+                                            playMarioSound('delete');
+                                            localStorage.removeItem('myWhiskeyFirebaseConfig');
+                                            setFirebaseConfigModal(false);
+                                            showAlert('클라우드 연동이 해제되었습니다.\n로컬 데이터로 전환하기 위해 페이지를 새로고침합니다.');
+                                            setTimeout(() => window.location.reload(), 1000);
+                                        }}
+                                        className="px-3 py-2 bg-red-900/60 hover:bg-red-800 text-red-100 rounded-lg text-xs font-bold transition-colors"
+                                    >
+                                        연동 해제
+                                    </button>
+                                    <div className="flex gap-2">
+                                        <button onClick={() => setFirebaseConfigModal(false)} className="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg transition-colors hover:bg-gray-700 text-xs">닫기</button>
+                                        <button onClick={() => {
+                                            if (!firebaseConfigInput.apiKey || !firebaseConfigInput.projectId) {
+                                                return showAlert('최소한 API Key와 Project ID는 필수적으로 입력해야 합니다!');
+                                            }
+                                            playMarioSound('coin');
+                                            localStorage.setItem('myWhiskeyFirebaseConfig', JSON.stringify(firebaseConfigInput));
+                                            setFirebaseConfigModal(false);
+                                            showAlert('Firebase 클라우드 연동 정보가 저장되었습니다.\n설정을 활성화하기 위해 페이지를 새로고침합니다!');
+                                            setTimeout(() => window.location.reload(), 1000);
+                                        }} className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg transition-colors text-xs">저장 & 연결</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {apiModal.isOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4 py-10">
+                            <div className="bg-gray-900 border border-gray-700 p-6 rounded-xl shadow-2xl max-w-2xl w-full flex flex-col max-h-full animate-in zoom-in-95">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-lg font-bold text-amber-50 flex items-center gap-2"><SearchIcon size={20} className="text-blue-400" /> 위스키 정보 검색</h3>
+                                    <button onClick={() => setApiModal({ isOpen: false, query: '', results: [], isSearching: false })} className="text-gray-400 hover:text-white"><XIcon size={20} /></button>
+                                </div>
+                                
+                                <div className="relative mb-6 flex gap-2">
+                                    <div className="relative flex-1">
+                                        <input type="text" className="w-full bg-gray-800 text-amber-50 border border-gray-700 rounded-lg py-3 px-4 pl-12 focus:border-blue-500" placeholder="위스키 이름을 입력하고 AI로 검색해보세요!" value={apiModal.query} onChange={(e) => setApiModal({...apiModal, query: e.target.value})} onKeyDown={(e) => { if(e.key === 'Enter') handleAIApiSearch(); }} autoFocus />
+                                        <SearchIcon className="absolute left-4 top-3.5 text-gray-400" size={20} />
+                                    </div>
+                                    <button 
+                                        onClick={handleAIApiSearch}
+                                        disabled={apiModal.isSearching}
+                                        className="bg-purple-600 hover:bg-purple-500 text-white px-5 rounded-lg font-bold transition-colors flex items-center gap-2 disabled:opacity-50 whitespace-nowrap shadow-lg shadow-purple-900/50"
+                                    >
+                                        <Sparkles size={18} className={apiModal.isSearching ? "animate-spin" : ""} /> 
+                                        {apiModal.isSearching ? '검색 중...' : '✨ AI 검색'}
+                                    </button>
+                                </div>
+                                
+                                <div className="flex-1 overflow-y-auto space-y-3">
+                                    {apiModal.isSearching ? (
+                                        <div className="text-center text-purple-400 py-10 flex flex-col items-center gap-3">
+                                            <Sparkles size={32} className="animate-bounce" />
+                                            <p className="animate-pulse font-semibold">AI가 방대한 위스키 데이터를 뒤지고 있습니다...</p>
+                                        </div>
+                                    ) : apiModal.results.length === 0 ? (
+                                        <p className="text-center text-gray-500 py-10">검색 결과가 없습니다.</p>
+                                    ) : (
+                                        <React.Fragment>
+                                            {apiModal.results === MOCK_API_DATA && <p className="text-xs text-gray-500 mb-2 px-1">추천 예시 (위 검색창에서 다른 위스키를 찾아보세요)</p>}
+                                            {apiModal.results.map((whiskey, idx) => (
+                                                <div key={idx} className="bg-gray-800 border border-gray-700 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-center gap-4 hover:border-gray-500 transition-colors">
+                                                    <div className="w-full">
+                                                        <h4 className="font-bold text-amber-50 text-lg">{whiskey.name}</h4>
+                                                        <p className="text-sm text-gray-400 font-mono">{whiskey.engName}</p>
+                                                        <div className="flex gap-2 mt-2">
+                                                            <span className="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300 font-medium">{whiskey.type}</span>
+                                                            <span className="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300 font-medium">숙성: {whiskey.age}</span>
+                                                            {whiskey.flavor && <span className="text-xs bg-purple-900/50 text-purple-300 px-2 py-1 rounded font-medium border border-purple-700/50">{whiskey.flavor}</span>}
+                                                        </div>
+                                                    </div>
+                                                    <button onClick={() => handleSelectApiWhiskey(whiskey)} className="shrink-0 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-lg">선택하기</button>
+                                                </div>
+                                            ))}
+                                        </React.Fragment>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* API 키 입력 모달 */}
+                    {apiKeyModal.isOpen && (
+                        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
+                            <div className="bg-gray-900 border border-purple-500/50 p-6 rounded-xl shadow-2xl max-w-md w-full animate-in zoom-in-95">
+                                <h3 className="text-xl font-bold text-amber-50 mb-3 flex items-center gap-2">🔑 Gemini API 키 필요</h3>
+                                <p className="text-gray-300 text-sm mb-4 leading-relaxed">
+                                    현재 브라우저/메모장 등 <strong>로컬 환경</strong>에서 실행 중이시군요!<br/>
+                                    AI 기능을 활성화하려면 직접 발급받은 API 키가 필요합니다.<br/>
+                                    <span className="text-xs text-gray-500">(미리보기 화면에서는 자동으로 지원됩니다.)</span>
+                                </p>
+                                <div className="mb-6">
+                                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 text-sm underline mb-2 inline-block">👉 구글 AI Studio에서 무료 발급받기</a>
+                                    <input 
+                                        type="password" 
+                                        placeholder="AIzaSy..." 
+                                        className="w-full bg-gray-800 text-amber-50 border border-gray-600 rounded-lg py-3 px-4 focus:border-purple-500 outline-none" 
+                                        value={apiKeyModal.keyInput} 
+                                        onChange={(e) => setApiKeyModal({...apiKeyModal, keyInput: e.target.value})}
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-3">
+                                    <button onClick={() => setApiKeyModal({isOpen: false, keyInput: ''})} className="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg transition-colors hover:bg-gray-700">닫기</button>
+                                    <button onClick={() => {
+                                        localStorage.setItem('gemini_api_key', apiKeyModal.keyInput);
+                                        setApiKeyModal({isOpen: false, keyInput: ''});
+                                        showAlert('API 키가 브라우저에 저장되었습니다.\n방금 전 이용하려던 AI 기능을 다시 클릭해주세요!');
+                                    }} className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg transition-colors">저장하기</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {modal.isOpen && (
+                        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+                            <div className="bg-gray-900 border border-gray-700 p-6 rounded-xl shadow-2xl max-w-sm w-full">
+                                <p className="text-amber-50 text-base mb-6 whitespace-pre-wrap">{modal.message}</p>
+                                {modal.type === 'prompt' && <input type="text" className="w-full bg-gray-800 text-amber-50 border border-gray-600 rounded-lg py-2 px-3 focus:border-amber-500 mb-6" value={promptInput} onChange={(e) => setPromptInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { if (modal.onConfirm) modal.onConfirm(promptInput); } }} autoFocus />}
+                                <div className="flex justify-end gap-3">
+                                    {(modal.type === 'confirm' || modal.type === 'prompt') && <button onClick={closeModal} className="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg">취소</button>}
+                                    <button onClick={() => { if (modal.type === 'confirm' && modal.onConfirm) modal.onConfirm(); else if (modal.type === 'prompt' && modal.onConfirm) modal.onConfirm(promptInput); else closeModal(); }} className="px-4 py-2 bg-amber-600 text-white rounded-lg">확인</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showScrollTop && (
+                        <button
+                            onClick={scrollToTop}
+                            className="fixed bottom-8 right-8 p-3 bg-amber-600 hover:bg-amber-500 text-white rounded-full shadow-2xl transition-all duration-300 z-40 flex items-center justify-center animate-in fade-in slide-in-from-bottom-5"
+                            title="맨 위로 가기"
+                        >
+                            <ArrowUp size={24} />
+                        </button>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 20px; }
+    </style>
+</body>
+</html>
