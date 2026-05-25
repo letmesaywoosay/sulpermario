@@ -1891,7 +1891,6 @@
                             <input type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
                             <button onClick={() => fileInputRef.current.click()} className="flex items-center gap-2 text-sm bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2.5 rounded-lg transition-colors font-semibold shadow-sm"><UploadIcon size={18} /> 엑셀 불러오기</button>
                             <button onClick={handleFileExport} className="flex items-center gap-2 text-sm bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-lg transition-colors font-semibold shadow-sm"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> 엑셀 백업</button>
-                            <button onClick={handleOpenApiModal} className="flex items-center gap-2 text-sm bg-purple-600 hover:bg-purple-500 text-white px-4 py-2.5 rounded-lg transition-colors font-semibold shadow-sm"><Sparkles size={18} /> AI 검색</button>
                             <button onClick={handleAddRow} className="flex items-center gap-2 text-sm bg-amber-600 hover:bg-amber-500 text-white px-4 py-2.5 rounded-lg transition-colors font-semibold shadow-sm"><Plus size={18} /> 직접 추가</button>
                         </div>
                     </div>
@@ -1972,7 +1971,6 @@
                             <input type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
                             <button onClick={() => fileInputRef.current.click()} className="flex items-center gap-2 text-sm bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2.5 rounded-lg transition-colors font-semibold shadow-sm"><UploadIcon size={18} /> 엑셀/CSV 불러오기</button>
                             <button onClick={handleFileExport} className="flex items-center gap-2 text-sm bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-lg transition-colors font-semibold shadow-sm"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> 엑셀 백업</button>
-                            <button onClick={handleOpenApiModal} className="flex items-center gap-2 text-sm bg-purple-600 hover:bg-purple-500 text-white px-4 py-2.5 rounded-lg transition-colors font-semibold shadow-sm"><Sparkles size={18} /> AI 검색</button>
                             <button onClick={handleAddRow} className="flex items-center gap-2 text-sm bg-amber-600 hover:bg-amber-500 text-white px-4 py-2.5 rounded-lg transition-colors font-semibold shadow-sm"><Plus size={18} /> 직접 추가</button>
                         </div>
                     </div>
@@ -2734,60 +2732,7 @@
                         </div>
                     )}
 
-                    {apiModal.isOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4 py-10">
-                            <div className="bg-gray-900 border border-gray-700 p-6 rounded-xl shadow-2xl max-w-2xl w-full flex flex-col max-h-full animate-in zoom-in-95">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-lg font-bold text-amber-50 flex items-center gap-2"><SearchIcon size={20} className="text-blue-400" /> 위스키 정보 검색</h3>
-                                    <button onClick={() => setApiModal({ isOpen: false, query: '', results: [], isSearching: false })} className="text-gray-400 hover:text-white"><XIcon size={20} /></button>
-                                </div>
-                                
-                                <div className="relative mb-6 flex gap-2">
-                                    <div className="relative flex-1">
-                                        <input type="text" className="w-full bg-gray-800 text-amber-50 border border-gray-700 rounded-lg py-3 px-4 pl-12 focus:border-blue-500" placeholder="위스키 이름을 입력하고 AI로 검색해보세요!" value={apiModal.query} onChange={(e) => setApiModal({...apiModal, query: e.target.value})} onKeyDown={(e) => { if(e.key === 'Enter') handleAIApiSearch(); }} autoFocus />
-                                        <SearchIcon className="absolute left-4 top-3.5 text-gray-400" size={20} />
-                                    </div>
-                                    <button 
-                                        onClick={handleAIApiSearch}
-                                        disabled={apiModal.isSearching}
-                                        className="bg-purple-600 hover:bg-purple-500 text-white px-5 rounded-lg font-bold transition-colors flex items-center gap-2 disabled:opacity-50 whitespace-nowrap shadow-lg shadow-purple-900/50"
-                                    >
-                                        <Sparkles size={18} className={apiModal.isSearching ? "animate-spin" : ""} /> 
-                                        {apiModal.isSearching ? '검색 중...' : '✨ AI 검색'}
-                                    </button>
-                                </div>
-                                
-                                <div className="flex-1 overflow-y-auto space-y-3">
-                                    {apiModal.isSearching ? (
-                                        <div className="text-center text-purple-400 py-10 flex flex-col items-center gap-3">
-                                            <Sparkles size={32} className="animate-bounce" />
-                                            <p className="animate-pulse font-semibold">AI가 방대한 위스키 데이터를 뒤지고 있습니다...</p>
-                                        </div>
-                                    ) : apiModal.results.length === 0 ? (
-                                        <p className="text-center text-gray-500 py-10">검색 결과가 없습니다.</p>
-                                    ) : (
-                                        <React.Fragment>
-                                            {apiModal.results === MOCK_API_DATA && <p className="text-xs text-gray-500 mb-2 px-1">추천 예시 (위 검색창에서 다른 위스키를 찾아보세요)</p>}
-                                            {apiModal.results.map((whiskey, idx) => (
-                                                <div key={idx} className="bg-gray-800 border border-gray-700 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-center gap-4 hover:border-gray-500 transition-colors">
-                                                    <div className="w-full">
-                                                        <h4 className="font-bold text-amber-50 text-lg">{whiskey.name}</h4>
-                                                        <p className="text-sm text-gray-400 font-mono">{whiskey.engName}</p>
-                                                        <div className="flex gap-2 mt-2">
-                                                            <span className="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300 font-medium">{whiskey.type}</span>
-                                                            <span className="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300 font-medium">숙성: {whiskey.age}</span>
-                                                            {whiskey.flavor && <span className="text-xs bg-purple-900/50 text-purple-300 px-2 py-1 rounded font-medium border border-purple-700/50">{whiskey.flavor}</span>}
-                                                        </div>
-                                                    </div>
-                                                    <button onClick={() => handleSelectApiWhiskey(whiskey)} className="shrink-0 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-lg">선택하기</button>
-                                                </div>
-                                            ))}
-                                        </React.Fragment>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    )}
+
 
                     {/* API 키 입력 모달 */}
                     {apiKeyModal.isOpen && (
