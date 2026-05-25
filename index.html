@@ -873,7 +873,24 @@
                 
                 try {
                     const localKey = localStorage.getItem('gemini_api_key') || '';
-                    const generatedText = await generateGeminiContent(prompt, localKey, true);
+                    let generatedText;
+                    
+                    try {
+                        // 1차 시도: 구글 검색 그라운딩이 연동된 실시간 검색 모드
+                        console.log("Attempting generation with Google Search grounding...");
+                        generatedText = await generateGeminiContent(prompt, localKey, true);
+                    } catch (searchError) {
+                        console.warn("Google Search Grounding failed (likely due to free tier key or regional restrictions). Falling back to base generation...", searchError);
+                        
+                        // 구글 검색 API 승인 실패시 API 키 자체의 문제(누락, 권한 등)인 경우 바로 catch 블록으로 빠지게 유도
+                        if (searchError.message === "API_KEY_MISSING" || searchError.message.includes("403")) {
+                            throw searchError;
+                        }
+                        
+                        // 2차 시도 (대안): 실시간 웹 검색 도구를 해제하고 기학습된 풍부한 위스키 지식을 기반으로 응답하도록 우회
+                        const fallbackPrompt = prompt + "\n(참고: 인터넷 실시간 검색 기능이 작동하지 않을 경우, 해당 위스키에 대해 당신이 이미 알고 있는 전문 지식을 기반으로 가장 어울리는 안주를 추천해주세요.)";
+                        generatedText = await generateGeminiContent(fallbackPrompt, localKey, false);
+                    }
                     
                     setTileEditForm(prev => ({
                         ...prev,
@@ -885,7 +902,7 @@
                     if (error.message === "API_KEY_MISSING" || error.message.includes("400") || error.message.includes("403")) {
                         setApiKeyModal({ isOpen: true, keyInput: localStorage.getItem('gemini_api_key') || '' });
                     } else {
-                        showAlert('안주 추천 생성에 실패했습니다. 잠시 후 다시 시도해주세요.');
+                        showAlert('안주 추천 생성에 실패했습니다. API 키가 올바른지 확인하시거나 잠시 후 다시 시도해주세요.');
                     }
                 } finally {
                     setIsGeneratingSearchPairing(false);
