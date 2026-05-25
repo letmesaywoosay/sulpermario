@@ -124,7 +124,7 @@
                 throw new Error("API_KEY_MISSING");
             }
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${finalKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${finalKey}`;
             const payload = {
                 contents: [{ parts: [{ text: prompt }] }]
             };
