@@ -747,81 +747,9 @@
             const showConfirm = (message, onConfirm) => setModal({ isOpen: true, message, type: 'confirm', onConfirm });
             const closeModal = () => setModal({ isOpen: false, message: '', type: 'alert', onConfirm: null });
 
-            useEffect(() => {
-                setAiCocktail('');
-                setAiPairing('');
-            }, [tileEditForm?.id]);
+            
 
-            const handleGenerateAICocktail = async () => {
-                if (!tileEditForm) return;
-                setIsGeneratingCocktail(true);
-                
-                const flavorText = Array.isArray(tileEditForm.flavor) && tileEditForm.flavor.length > 0
-                    ? tileEditForm.flavor.map(f => f.name).join(', ') 
-                    : '특징 없음';
-
-                const prompt = `당신은 재치 넘치는 바텐더이자 슈퍼마리오 시리즈 전문가입니다. 다음 위스키의 프로필을 바탕으로 창의적인 '마리오 테마 칵테일' 레시피를 하나 만들어주세요.
-                - 위스키 이름: ${tileEditForm.name}
-                - 숙성년수: ${tileEditForm.age || 'NAS'}
-                - 카테고리: ${tileEditForm.type || '미상'}
-                - 주요 풍미: ${flavorText}
-                
-                조건:
-                1. 칵테일 이름은 위스키의 성격과 마리오 세계관을 엮어 아주 매력적으로 지어주세요 (예: '쿠파의 용암 하이볼', '피치 공주의 셰리 피즈').
-                2. 재료 분량(레시피), 장식(Garnish), 제조 방법(조조/기법)을 가볍게 설명해주세요.
-                3. 친근하고 감성적이되, 너무 길지 않게 4~5문장 이내의 깔끔한 한국어로 출력하세요.`;
-
-                try {
-                    const localKey = localStorage.getItem('gemini_api_key') || '';
-                    const res = await generateGeminiContent(prompt, localKey);
-                    setAiCocktail(res.trim());
-                    playMarioSound('levelup');
-                } catch(error) {
-                    console.error(error);
-                    if (error.message === "API_KEY_MISSING" || error.message.includes("400") || error.message.includes("403")) {
-                        setApiKeyModal({ isOpen: true, keyInput: localStorage.getItem('gemini_api_key') || '' });
-                    } else {
-                        showAlert('칵테일 생성에 실패했습니다.');
-                    }
-                } finally {
-                    setIsGeneratingCocktail(false);
-                }
-            };
-
-            const handleGenerateAIPairing = async () => {
-                if (!tileEditForm) return;
-                setIsGeneratingPairing(true);
-                
-                const flavorText = Array.isArray(tileEditForm.flavor) && tileEditForm.flavor.length > 0
-                    ? tileEditForm.flavor.map(f => f.name).join(', ') 
-                    : '특징 없음';
-
-                const prompt = `당신은 푸드 스타일리스트이자 위스키 마리아주 전문가입니다. 다음 위스키의 풍미에 가장 잘 어울리는 '추천 안주(푸드 페어링)' 조합을 2가지 제안해주세요.
-                - 위스키 이름: ${tileEditForm.name}
-                - 숙성년수: ${tileEditForm.age || 'NAS'}
-                - 주요 풍미: ${flavorText}
-                
-                조건:
-                1. 한국식 안주(예: 꿀치즈 육포, 약과) 또는 위스키 테이블 디저트 중 가장 어울리는 조합을 추천해주세요.
-                2. 왜 어울리는지(페어링 원리) 간결하게 3~4문장 내외로 맛있게 설명해주세요.
-                3. 다른 잡담 없이 한국어로 핵심 추천 텍스트만 출력하세요.`;
-
-                try {
-                    const localKey = localStorage.getItem('gemini_api_key') || '';
-                    const res = await generateGeminiContent(prompt, localKey);
-                    setAiPairing(res.trim());
-                    playMarioSound('levelup');
-                } catch(error) {
-                    console.error(error);
-                    if (error.message === "API_KEY_MISSING" || error.message.includes("400") || error.message.includes("403")) {
-                        setApiKeyModal({ isOpen: true, keyInput: localStorage.getItem('gemini_api_key') || '' });
-                    } else {
-                        showAlert('안주 추천 생성에 실패했습니다.');
-                    }
-                } finally {
-                    setIsGeneratingPairing(false);
-                }
-            };
+            
 
             const handleJsonExport = () => {
                 try {
@@ -2248,63 +2176,7 @@
                                             <textarea className={`${inputClass} py-3 h-24 resize-none leading-relaxed`} value={tileEditForm.review} onChange={e => setTileEditForm({...tileEditForm, review: e.target.value})} placeholder="자신만의 시음기를 자유롭게 기록해보세요." />
                                         </div>
 
-                                        {/* AI mixology and pairing helper panels */}
-                                        <div className="sm:col-span-2 mt-3 grid grid-cols-2 gap-3">
-                                            <button 
-                                                onClick={handleGenerateAICocktail} 
-                                                disabled={isGeneratingCocktail}
-                                                className="py-2 px-3 bg-purple-900/40 hover:bg-purple-900/60 disabled:opacity-50 text-purple-200 border border-purple-700/40 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm"
-                                            >
-                                                <Sparkles size={13} className="text-purple-400" />
-                                                {isGeneratingCocktail ? '칵테일 믹싱 중...' : '🍸 마리오 테마 칵테일'}
-                                            </button>
-                                            <button 
-                                                onClick={handleGenerateAIPairing} 
-                                                disabled={isGeneratingPairing}
-                                                className="py-2 px-3 bg-emerald-900/40 hover:bg-emerald-900/60 disabled:opacity-50 text-emerald-200 border border-emerald-700/40 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm"
-                                            >
-                                                <Sparkles size={13} className="text-emerald-400" />
-                                                {isGeneratingPairing ? '안주 어울림 분석 중...' : '🍱 어울리는 안주 추천'}
-                                            </button>
-                                        </div>
-
-                                        {aiCocktail && (
-                                            <div className="sm:col-span-2 bg-purple-950/40 border border-purple-800/30 p-3.5 rounded-xl mt-2 animate-in slide-in-from-top-3 duration-200">
-                                                <div className="flex justify-between items-center mb-1.5">
-                                                    <span className="text-[9px] font-black text-purple-400 uppercase tracking-widest">🍸 AI 마리오 테마 칵테일</span>
-                                                    <button 
-                                                        onClick={() => {
-                                                            setTileEditForm(prev => ({ ...prev, review: prev.review ? prev.review + '\n\n' + aiCocktail : aiCocktail }));
-                                                            setAiCocktail('');
-                                                            playMarioSound('coin');
-                                                        }}
-                                                        className="text-[9px] text-purple-300 hover:text-white bg-purple-850 border border-purple-700/40 px-2 py-0.5 rounded font-bold transition-colors"
-                                                    >
-                                                        시음기에 추가 ➕
-                                                    </button>
-                                                </div>
-                                                <p className="text-xs text-gray-300 whitespace-pre-wrap leading-relaxed">{aiCocktail}</p>
-                                            </div>
-                                        )}
-
-                                        {aiPairing && (
-                                            <div className="sm:col-span-2 bg-emerald-950/40 border border-emerald-800/30 p-3.5 rounded-xl mt-2 animate-in slide-in-from-top-3 duration-200">
-                                                <div className="flex justify-between items-center mb-1.5">
-                                                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">🍱 AI 푸드 페어링 추천</span>
-                                                    <button 
-                                                        onClick={() => {
-                                                            setTileEditForm(prev => ({ ...prev, review: prev.review ? prev.review + '\n\n' + aiPairing : aiPairing }));
-                                                            setAiPairing('');
-                                                            playMarioSound('coin');
-                                                        }}
-                                                        className="text-[9px] text-emerald-300 hover:text-white bg-emerald-850 border border-emerald-700/40 px-2 py-0.5 rounded font-bold transition-colors"
-                                                    >
-                                                        시음기에 추가 ➕
-                                                    </button>
-                                                </div>
-                                                <p className="text-xs text-gray-300 whitespace-pre-wrap leading-relaxed">{aiPairing}</p>
-                                            </div>
-                                        )}
+                                        
                                     </div>
                                     
                                     <div className="mt-8 flex gap-3 pt-5 border-t border-gray-800">
