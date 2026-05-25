@@ -254,15 +254,52 @@
                 { key: 'herbal', label: '허브 🌿', color: '#10b981', value: 0 }
             ];
 
-            if (!flavorData || !Array.isArray(flavorData)) return categories;
+            if (!flavorData) return categories;
 
-            flavorData.forEach(item => {
+            // 만약 flavorData가 문자열(예: "과일, 달콤" 또는 "건포도")인 경우 임시 배열로 변환
+            let normalizedFlavors = [];
+            if (typeof flavorData === 'string' && flavorData.trim() !== '') {
+                const parts = flavorData.split(',').map(s => s.trim());
+                normalizedFlavors = parts.map(part => {
+                    let color = '#9ca3af';
+                    for (const mainCat of FLAVOR_CATEGORIES) {
+                        if (part.includes(mainCat.category.substring(0, 2))) {
+                            color = mainCat.color;
+                            break;
+                        }
+                        for (const subCat of mainCat.subCategories) {
+                            if (part.includes(subCat.name.substring(0, 2)) || subCat.items.includes(part)) {
+                                color = mainCat.color;
+                                break;
+                            }
+                        }
+                        if (color !== '#9ca3af') break;
+                    }
+                    return { name: part, value: 100 / parts.length, color };
+                });
+            } else if (Array.isArray(flavorData)) {
+                normalizedFlavors = flavorData;
+            } else {
+                return categories;
+            }
+
+            normalizedFlavors.forEach(item => {
                 let found = false;
                 for (let i = 0; i < FLAVOR_CATEGORIES.length; i++) {
                     const mainCat = FLAVOR_CATEGORIES[i];
+                    
+                    // 1. 메인 카테고리 명과 일치하는 경우 (예: "과일 계열", "과일")
+                    if (item.name.includes(mainCat.category) || mainCat.category.includes(item.name)) {
+                        categories[i].value += item.value;
+                        found = true;
+                        break;
+                    }
+                    
                     for (let j = 0; j < mainCat.subCategories.length; j++) {
                         const subCat = mainCat.subCategories[j];
-                        if (subCat.items.includes(item.name)) {
+                        
+                        // 2. 서브 카테고리 명과 일치하는 경우 (예: "생과일", "말린 과일") 또는 개별 아이템 일치
+                        if (item.name.includes(subCat.name) || subCat.name.includes(item.name) || subCat.items.includes(item.name)) {
                             categories[i].value += item.value;
                             found = true;
                             break;
@@ -270,6 +307,8 @@
                     }
                     if (found) break;
                 }
+                
+                // 3. 색상 매핑 폴백
                 if (!found) {
                     if (item.color === '#ef4444') categories[0].value += item.value;
                     else if (item.color === '#f59e0b') categories[1].value += item.value;
@@ -2125,9 +2164,9 @@
                                     </div>
                                     
                                     {/* Flavor Radar Chart */}
-                                    <div className="mt-4 sm:mt-6 flex-1 flex flex-col items-center justify-center min-h-[190px]">
-                                        <span className="text-[9px] sm:text-[10px] uppercase font-bold text-amber-500/80 mb-1.5 sm:mb-2.5 tracking-wider select-none">나만의 테이스팅 시그니처</span>
-                                        <TastingRadarChart flavorData={tileEditForm.flavor} size={180} />
+                                    <div className="mt-4 sm:mt-6 flex-1 flex flex-col items-center justify-center min-h-[290px]">
+                                        <span className="text-[11px] sm:text-xs uppercase font-extrabold text-amber-500 mb-2.5 tracking-widest select-none">나만의 테이스팅 시그니처</span>
+                                        <TastingRadarChart flavorData={tileEditForm.flavor} size={250} />
                                     </div>
                                 </div>
 
