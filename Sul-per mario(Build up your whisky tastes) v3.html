@@ -13,10 +13,7 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <!-- SheetJS (엑셀/CSV 파일 읽기 라이브러리) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- Firebase SDK (클라우드 연동) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans">
     <div id="root"></div>
@@ -150,53 +147,8 @@
             }
         };
 
-        // --- Firebase Initializer & Helpers ---
-        let firebaseApp = null;
-        let auth = null;
-        let db = null;
-
-        const getStoredFirebaseConfig = () => {
-            // 💡 배포 시 아래 HARDCODED_CONFIG 변수 자리에 Firebase 설정을 객체 형태로 입력해두면
-            // (예: const HARDCODED_CONFIG = { apiKey: "...", authDomain: "...", projectId: "...", ... })
-            // 유저들이 설정창을 열어 직접 입력하지 않아도 즉시 실시간 클라우드 연동이 시작됩니다!
-            const HARDCODED_CONFIG = {
-                apiKey: "AIzaSyBsdF5TQ7zb5XGiD1kj7uR-FqhoHdhpoT8",
-                authDomain: "sul-per-mario.firebaseapp.com",
-                projectId: "sul-per-mario",
-                storageBucket: "sul-per-mario.firebasestorage.app",
-                messagingSenderId: "109704596832",
-                appId: "1:109704596832:web:2af07123816be1e7822205",
-                measurementId: "G-BFGSNJZ8WZ"
-            };
-
-            try {
-                const saved = localStorage.getItem('myWhiskeyFirebaseConfig');
-                return saved ? JSON.parse(saved) : HARDCODED_CONFIG;
-            } catch(e) { return HARDCODED_CONFIG; }
-        };
-
-        const initializeFirebaseApp = (config) => {
-            if (!config) return false;
-            try {
-                // If it is empty strings or default placeholder keys, don't initialize
-                if (!config.apiKey || config.apiKey.includes("YOUR_")) return false;
-                
-                if (firebase.apps.length === 0) {
-                    firebaseApp = firebase.initializeApp(config);
-                } else {
-                    firebaseApp = firebase.app();
-                }
-                auth = firebase.auth();
-                db = firebase.firestore();
-                return true;
-            } catch(e) {
-                console.error("Firebase Init Error:", e);
-                return false;
-            }
-        };
-
-        // Auto-boot if credentials exist
-        let isFirebaseActive = initializeFirebaseApp(getStoredFirebaseConfig());
+        // Firebase removed - personal offline mode
+        const isFirebaseActive = false;
 
         // --- Retro 8-bit Audio Synthesizer (Web Audio API) ---
         let isAudioMuted = false;
@@ -467,149 +419,7 @@
             );
         };
 
-        // --- Glassmorphic, Mario-themed Login / Signup Gatekeeper Overlay ---
-        function AuthScreen({ onGuestMode }) {
-            const [isSignUp, setIsSignUp] = React.useState(false);
-            const [email, setEmail] = React.useState('');
-            const [password, setPassword] = React.useState('');
-            const [errorMsg, setErrorMsg] = React.useState('');
-            const [isLoading, setIsLoading] = React.useState(false);
 
-            const handleSubmit = async (e) => {
-                e.preventDefault();
-                setErrorMsg('');
-                setIsLoading(true);
-                playMarioSound('coin');
-                
-                try {
-                    if (isSignUp) {
-                        await auth.createUserWithEmailAndPassword(email, password);
-                    } else {
-                        await auth.signInWithEmailAndPassword(email, password);
-                    }
-                } catch (e) {
-                    console.error("Auth Error:", e);
-                    let korMessage = "로그인 중 오류가 발생했습니다.";
-                    if (e.code === 'auth/wrong-password') korMessage = "비밀번호가 올바르지 않습니다.";
-                    else if (e.code === 'auth/user-not-found') korMessage = "등록되지 않은 이메일 계정입니다.";
-                    else if (e.code === 'auth/email-already-in-use') korMessage = "이미 사용 중인 이메일 주소입니다.";
-                    else if (e.code === 'auth/weak-password') korMessage = "비밀번호는 최소 6자리 이상이어야 합니다.";
-                    else if (e.code === 'auth/invalid-email') korMessage = "유효하지 않은 이메일 형식입니다.";
-                    setErrorMsg(korMessage);
-                } finally {
-                    setIsLoading(false);
-                }
-            };
-
-            const handleGoogleLogin = async () => {
-                setErrorMsg('');
-                setIsLoading(true);
-                playMarioSound('powerup');
-                try {
-                    const provider = new firebase.auth.GoogleAuthProvider();
-                    await auth.signInWithPopup(provider);
-                } catch (e) {
-                    console.error("Google Auth Error:", e);
-                    setErrorMsg("구글 로그인 중 오류가 발생했습니다.");
-                } finally {
-                    setIsLoading(false);
-                }
-            };
-
-            return (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md px-4">
-                    <div className="w-full max-w-md bg-gray-900 border-2 border-amber-500 rounded-2xl shadow-[0_0_30px_rgba(245,158,11,0.3)] overflow-hidden animate-in zoom-in-95 duration-200">
-                        {/* Mario-style header */}
-                        <div className="bg-gradient-to-r from-red-600 to-amber-600 p-6 text-center border-b-4 border-amber-400 relative">
-                            <div className="absolute top-2 left-4 text-xs font-black text-amber-200 select-none animate-bounce" style={{ animationDuration: '3s' }}>⭐ SUL-PER MARIO</div>
-                            <h3 className="text-2xl font-black text-white tracking-widest mt-2 select-none uppercase">
-                                WHISKEY ADVENTURE
-                            </h3>
-                            <p className="text-[10px] text-amber-100 font-bold mt-1 tracking-wider">
-                                클라우드 동기화로 술장을 백업하세요!
-                            </p>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                            {errorMsg && (
-                                <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs p-3 rounded-lg flex items-center gap-2">
-                                    <span>⚠️</span> {errorMsg}
-                                </div>
-                            )}
-
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">이메일 주소</label>
-                                <input 
-                                    type="email" 
-                                    required 
-                                    className="w-full bg-gray-950 text-amber-50 border border-gray-700 rounded-lg py-2.5 px-3 focus:outline-none focus:border-amber-500 text-sm"
-                                    placeholder="your-email@example.com" 
-                                    value={email} 
-                                    onChange={e => setEmail(e.target.value)} 
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">비밀번호</label>
-                                <input 
-                                    type="password" 
-                                    required 
-                                    className="w-full bg-gray-950 text-amber-50 border border-gray-700 rounded-lg py-2.5 px-3 focus:outline-none focus:border-amber-500 text-sm"
-                                    placeholder="••••••" 
-                                    value={password} 
-                                    onChange={e => setPassword(e.target.value)} 
-                                />
-                            </div>
-
-                            <button 
-                                type="submit" 
-                                disabled={isLoading}
-                                className="w-full py-3 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white rounded-lg font-black text-sm tracking-widest shadow-lg transition-colors border-b-4 border-amber-800 active:border-b-0 active:mt-1 flex items-center justify-center gap-2"
-                            >
-                                {isLoading ? '버섯 로딩 중...' : (isSignUp ? '모험 시작 (회원가입)' : '게임 스타트 (로그인)')}
-                            </button>
-
-                            <div className="relative my-6 text-center">
-                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-800"></div></div>
-                                <span className="relative bg-gray-900 px-3 text-[10px] uppercase font-bold text-gray-500 tracking-widest">OR</span>
-                            </div>
-
-                            <button 
-                                type="button" 
-                                onClick={handleGoogleLogin}
-                                disabled={isLoading}
-                                className="w-full py-2.5 bg-white hover:bg-gray-100 disabled:opacity-50 text-gray-800 rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-colors border border-gray-300 shadow-sm"
-                            >
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z" fill="#FBBC05"/>
-                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                                </svg>
-                                구글 계정으로 로그인
-                            </button>
-
-                            <div className="flex justify-between text-xs pt-4 font-bold select-none border-t border-gray-800">
-                                <button 
-                                    type="button" 
-                                    onClick={() => { setErrorMsg(''); setIsSignUp(!isSignUp); playMarioSound('coin'); }} 
-                                    className="text-amber-500 hover:text-amber-400"
-                                >
-                                    {isSignUp ? '이미 계정이 있으신가요? 로그인' : '새 계정 만들기 (회원가입)'}
-                                </button>
-                                <button 
-                                    type="button" 
-                                    onClick={onGuestMode} 
-                                    className="text-gray-400 hover:text-gray-300 underline"
-                                >
-                                    임시 오프라인 모드
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            );
-        }
 
         function App() {
             const { useState, useMemo, useEffect, useRef } = React;
@@ -656,14 +466,7 @@
                 catch(e) { return null; }
             });
 
-            const [user, setUser] = useState(null);
-            const [isAuthChecking, setIsAuthChecking] = useState(isFirebaseActive);
-            const [isCloudSyncing, setIsCloudSyncing] = useState(false);
-            const [isGuestMode, setIsGuestMode] = useState(false);
-            const [firebaseConfigModal, setFirebaseConfigModal] = useState(false);
-            const [firebaseConfigInput, setFirebaseConfigInput] = useState(() => {
-                return getStoredFirebaseConfig() || { apiKey: '', authDomain: '', projectId: '', storageBucket: '', messagingSenderId: '', appId: '' };
-            });
+            // Auth removed - personal use
 
             const [showScrollTop, setShowScrollTop] = useState(false);
             const [isDashboardOpen, setIsDashboardOpen] = useState(false);
@@ -822,89 +625,7 @@
                 } catch(e) { console.warn("Fallback local fetch failed", e); }
             };
 
-            const syncFromFirestore = async (uid) => {
-                if (!isFirebaseActive || !uid) return;
-                setIsCloudSyncing(true);
-                try {
-                    const userDoc = await db.collection('users').doc(uid).get();
-                    if (userDoc.exists) {
-                        const userData = userDoc.data();
-                        if (Array.isArray(userData.stores)) setStores(userData.stores);
-                        if (Array.isArray(userData.ages)) setAges(userData.ages);
-                        if (userData.bannerImage !== undefined && userData.bannerImage !== null) {
-                            setBannerImage(userData.bannerImage);
-                        }
-                    }
-                    
-                    const cabinetSnapshot = await db.collection('users').doc(uid).collection('cabinet').get();
-                    const cloudCabinet = [];
-                    cabinetSnapshot.forEach(doc => {
-                        cloudCabinet.push({ id: doc.id, ...doc.data() });
-                    });
-                    setMyWhiskeys(cloudCabinet);
-                } catch(e) {
-                    console.error("Firestore Fetch Error:", e);
-                    showAlert("클라우드 데이터를 불러오는 중 오류가 발생했습니다.");
-                } finally {
-                    setIsCloudSyncing(false);
-                }
-            };
-
-            const saveWhiskeyToCloud = async (whiskey) => {
-                if (!isFirebaseActive || !user) return;
-                try {
-                    const data = {
-                        name: whiskey.name || '',
-                        age: whiskey.age || '',
-                        type: whiskey.type || '',
-                        flavor: Array.isArray(whiskey.flavor) ? whiskey.flavor : [],
-                        price: whiskey.price || '',
-                        store: whiskey.store || '',
-                        date: whiskey.date || '',
-                        tier: whiskey.tier || '-',
-                        review: whiskey.review || '',
-                        image: whiskey.image || ''
-                    };
-                    await db.collection('users').doc(user.uid).collection('cabinet').doc(whiskey.id).set(data);
-                } catch(e) { console.error("Firestore Write Error:", e); }
-            };
-
-            const deleteWhiskeyFromCloud = async (id) => {
-                if (!isFirebaseActive || !user) return;
-                try {
-                    await db.collection('users').doc(user.uid).collection('cabinet').doc(id).delete();
-                } catch(e) { console.error("Firestore Delete Error:", e); }
-            };
-
-            const saveUserConfigsToCloud = async (newStores, newAges, newBanner) => {
-                if (!isFirebaseActive || !user) return;
-                try {
-                    const payload = {};
-                    if (newStores !== undefined) payload.stores = newStores;
-                    if (newAges !== undefined) payload.ages = newAges;
-                    if (newBanner !== undefined) payload.bannerImage = newBanner;
-                    
-                    await db.collection('users').doc(user.uid).set(payload, { merge: true });
-                } catch(e) { console.error("Firestore Config Write Error:", e); }
-            };
-
-            useEffect(() => {
-                if (!isFirebaseActive) {
-                    setIsAuthChecking(false);
-                    return;
-                }
-                const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-                    setUser(currentUser);
-                    setIsAuthChecking(false);
-                    if (currentUser) {
-                        playMarioSound('powerup');
-                        syncFromFirestore(currentUser.uid);
-                    } else {
-                        loadOfflineCabinet();
-                    }
-                });
-                return () => unsubscribe();
-            }, []);
+            // Cloud sync removed - using localStorage only
 
             const [selectedIds, setSelectedIds] = useState([]);
             
@@ -2201,54 +1922,14 @@
 
             return (
                 <div>
-                    {isFirebaseActive && !user && !isAuthChecking && !isGuestMode && (
-                        <AuthScreen onGuestMode={() => { playMarioSound('coin'); setIsGuestMode(true); }} />
-                    )}
 
-                    {isCloudSyncing && (
-                        <div className="fixed top-4 left-4 z-[99] bg-gray-900/95 border border-amber-500/50 px-4 py-2.5 rounded-xl flex items-center gap-2.5 shadow-[0_0_20px_rgba(245,158,11,0.2)] text-xs font-bold text-amber-400 animate-pulse">
-                            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
-                            <span>☁️ 클라우드 동기화 중...</span>
-                        </div>
-                    )}
 
                     <nav className="w-full bg-[#1c0f0a] border-b border-amber-900/30 px-4 py-3 flex flex-row items-center justify-between shadow-md z-45 relative">
                         <div className="flex items-center gap-2 select-none">
                             <span className="text-amber-500 font-black tracking-widest text-sm sm:text-base">🍄 SUL-PER MARIO</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            {/* Cloud Sync Status Indicator & Auth Button */}
-                            {isFirebaseActive ? (
-                                user ? (
-                                    <div className="flex items-center gap-2 bg-gray-950/80 border border-emerald-500/40 px-2.5 py-1.5 rounded-lg shadow-sm">
-                                        {user.photoURL ? (
-                                            <img src={user.photoURL} alt="profile" className="w-4 h-4 rounded-full border border-emerald-400" />
-                                        ) : (
-                                            <span className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center text-[8px] text-white font-bold select-none">M</span>
-                                        )}
-                                        <span className="text-[10px] font-bold text-emerald-400 hidden sm:inline-block max-w-[80px] truncate">{user.displayName || user.email.split('@')[0]}</span>
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                        <button 
-                                            onClick={() => {
-                                                playMarioSound('delete'); // Game Over style logout chime
-                                                auth.signOut();
-                                            }}
-                                            className="ml-1 text-[8px] bg-red-650 hover:bg-red-550 border border-red-500/40 text-white px-2 py-0.5 rounded font-black transition-colors"
-                                        >
-                                            로그아웃
-                                        </button>
-                                    </div>
-                                ) : (
-                                    isGuestMode && (
-                                        <button 
-                                            onClick={() => { setIsGuestMode(false); playMarioSound('coin'); }}
-                                            className="px-2.5 py-1.5 bg-amber-600/90 hover:bg-amber-500 text-white rounded-lg shadow text-[10px] font-semibold flex items-center gap-1 border border-amber-500 transition-colors animate-pulse"
-                                        >
-                                            ☁️ 로그인
-                                        </button>
-                                    )
-                                )
-                            ) : null}
+
 
                             <button onClick={toggleMute} className="px-2.5 py-1.5 bg-gray-800/80 hover:bg-gray-700 text-gray-300 rounded-lg shadow text-[10px] font-semibold flex items-center gap-1 border border-gray-600 transition-colors">
                                 {muted ? '🔇 끔' : '🔊 켬'}
@@ -2671,72 +2352,7 @@
                         </div>
                     )}
 
-                    {/* Firebase Cloud Config Modal */}
-                    {firebaseConfigModal && (
-                        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
-                            <div className="bg-gray-900 border border-amber-600/50 p-6 rounded-xl shadow-2xl max-w-md w-full animate-in zoom-in-95">
-                                <h3 className="text-xl font-bold text-amber-50 mb-3 flex items-center gap-2">☁️ Firebase 클라우드 연동 설정</h3>
-                                <p className="text-gray-300 text-sm mb-4 leading-relaxed">
-                                    Firebase 프로젝트의 웹 앱 설정을 입력하여 클라우드 실시간 동기화를 활성화하세요.<br/>
-                                    공란으로 둘 경우 <strong>로컬 오프라인 모드(localStorage)</strong>로 실행됩니다.
-                                </p>
-                                <div className="space-y-3 mb-6">
-                                    <div>
-                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">API Key</label>
-                                        <input type="text" className="w-full bg-gray-800 text-amber-50 border border-gray-700 rounded-lg py-1.5 px-3 focus:border-amber-500 outline-none text-xs" value={firebaseConfigInput.apiKey} onChange={e => setFirebaseConfigInput({...firebaseConfigInput, apiKey: e.target.value})} placeholder="AIzaSy..." />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Auth Domain</label>
-                                        <input type="text" className="w-full bg-gray-800 text-amber-50 border border-gray-700 rounded-lg py-1.5 px-3 focus:border-amber-500 outline-none text-xs" value={firebaseConfigInput.authDomain} onChange={e => setFirebaseConfigInput({...firebaseConfigInput, authDomain: e.target.value})} placeholder="project-id.firebaseapp.com" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Project ID</label>
-                                        <input type="text" className="w-full bg-gray-800 text-amber-50 border border-gray-700 rounded-lg py-1.5 px-3 focus:border-amber-500 outline-none text-xs" value={firebaseConfigInput.projectId} onChange={e => setFirebaseConfigInput({...firebaseConfigInput, projectId: e.target.value})} placeholder="project-id" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Storage Bucket</label>
-                                        <input type="text" className="w-full bg-gray-800 text-amber-50 border border-gray-700 rounded-lg py-1.5 px-3 focus:border-amber-500 outline-none text-xs" value={firebaseConfigInput.storageBucket} onChange={e => setFirebaseConfigInput({...firebaseConfigInput, storageBucket: e.target.value})} placeholder="project-id.appspot.com" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Messaging Sender ID</label>
-                                        <input type="text" className="w-full bg-gray-800 text-amber-50 border border-gray-700 rounded-lg py-1.5 px-3 focus:border-amber-500 outline-none text-xs" value={firebaseConfigInput.messagingSenderId} onChange={e => setFirebaseConfigInput({...firebaseConfigInput, messagingSenderId: e.target.value})} placeholder="123456789012" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">App ID</label>
-                                        <input type="text" className="w-full bg-gray-800 text-amber-50 border border-gray-700 rounded-lg py-1.5 px-3 focus:border-amber-500 outline-none text-xs" value={firebaseConfigInput.appId} onChange={e => setFirebaseConfigInput({...firebaseConfigInput, appId: e.target.value})} placeholder="1:1234:web:abcd" />
-                                    </div>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <button 
-                                        type="button"
-                                        onClick={() => {
-                                            playMarioSound('delete');
-                                            localStorage.removeItem('myWhiskeyFirebaseConfig');
-                                            setFirebaseConfigModal(false);
-                                            showAlert('클라우드 연동이 해제되었습니다.\n로컬 데이터로 전환하기 위해 페이지를 새로고침합니다.');
-                                            setTimeout(() => window.location.reload(), 1000);
-                                        }}
-                                        className="px-3 py-2 bg-red-900/60 hover:bg-red-800 text-red-100 rounded-lg text-xs font-bold transition-colors"
-                                    >
-                                        연동 해제
-                                    </button>
-                                    <div className="flex gap-2">
-                                        <button onClick={() => setFirebaseConfigModal(false)} className="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg transition-colors hover:bg-gray-700 text-xs">닫기</button>
-                                        <button onClick={() => {
-                                            if (!firebaseConfigInput.apiKey || !firebaseConfigInput.projectId) {
-                                                return showAlert('최소한 API Key와 Project ID는 필수적으로 입력해야 합니다!');
-                                            }
-                                            playMarioSound('coin');
-                                            localStorage.setItem('myWhiskeyFirebaseConfig', JSON.stringify(firebaseConfigInput));
-                                            setFirebaseConfigModal(false);
-                                            showAlert('Firebase 클라우드 연동 정보가 저장되었습니다.\n설정을 활성화하기 위해 페이지를 새로고침합니다!');
-                                            setTimeout(() => window.location.reload(), 1000);
-                                        }} className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg transition-colors text-xs">저장 & 연결</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+
 
 
 
