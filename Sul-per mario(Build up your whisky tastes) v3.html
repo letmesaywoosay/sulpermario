@@ -433,10 +433,45 @@
                     const saved = localStorage.getItem('myWhiskeyCabinetData');
                     if (saved) {
                         const parsed = JSON.parse(saved);
-                        return Array.isArray(parsed) ? parsed : [];
+                        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
                     }
                 } catch(e) { console.warn("Failed to parse myWhiskeys", e); }
-                return []; 
+                return [
+                    {
+                        "id": "1778763993443",
+                        "name": "부쉬밀 블랙부쉬",
+                        "age": "NAS",
+                        "type": "아이리시",
+                        "flavor": [
+                            {"name": "짠맛", "color": "#3b82f6", "value": 34},
+                            {"name": "바닐라", "color": "#f59e0b", "value": 33},
+                            {"name": "배", "color": "#ef4444", "value": 33}
+                        ],
+                        "price": "31000",
+                        "store": "CU",
+                        "date": "2026-05-14",
+                        "tier": "B",
+                        "review": "구매후 2주후 \n알콜취는 많이 줄어들음\n의외로 드라이한 맛\n노즈는 프루티함",
+                        "image": "data:image/webp;base64,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"
+                        },
+                        {
+                            "id": "1778073146010",
+                            "name": "글렌 그란트 15",
+                            "age": "15",
+                            "type": "싱글몰트 스카치",
+                            "flavor": [
+                                {"name": "Fresh Fruit (생과일)", "color": "#00a88f", "value": 26},
+                                {"name": "Fruity Sweets (과일단맛)", "color": "#00a88f", "value": 32},
+                                {"name": "Vanilla (바닐라)", "color": "#8c3b4a", "value": 42}
+                            ],
+                            "price": "98000",
+                            "store": "이마트",
+                            "date": "2026-04-04",
+                            "tier": "A",
+                            "review": "",
+                            "image": ""
+                        }
+                    ];
             });
 
             const [stores, setStores] = useState(() => {
@@ -470,6 +505,7 @@
 
             const [showScrollTop, setShowScrollTop] = useState(false);
             const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+            const [settingsModal, setSettingsModal] = useState(false);
 
             const [muted, setMuted] = useState(() => {
                 try {
@@ -666,6 +702,7 @@
             
             const fileInputRef = useRef(null);
             const bannerInputRef = useRef(null);
+            const jsonInputRef = useRef(null);
 
             const showAlert = (message) => setModal({ isOpen: true, message, type: 'alert', onConfirm: null });
             const showConfirm = (message, onConfirm) => setModal({ isOpen: true, message, type: 'confirm', onConfirm });
@@ -745,6 +782,65 @@
                 } finally {
                     setIsGeneratingPairing(false);
                 }
+            };
+
+            const handleJsonExport = () => {
+                try {
+                    playMarioSound('pipe');
+                    const keys = ['myWhiskeyCabinetData', 'myWhiskeyStoresData', 'myWhiskeyAgesData', 'myWhiskeyBannerData', 'gemini_api_key'];
+                    const backup = {};
+                    keys.forEach(key => {
+                        backup[key] = localStorage.getItem(key);
+                    });
+                    
+                    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `sulper_mario_whiskey_backup_${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    showAlert('전체 데이터가 JSON 파일로 다운로드되었습니다!');
+                } catch (error) {
+                    console.error("JSON Export Error:", error);
+                    showAlert('JSON 백업 내보내기 중 오류가 발생했습니다.');
+                }
+            };
+
+            const handleJsonImport = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    try {
+                        const backup = JSON.parse(evt.target.result);
+                        if (!backup || typeof backup !== 'object') {
+                            return showAlert('올바르지 않은 백업 파일 형식입니다.');
+                        }
+                        
+                        if (backup.myWhiskeyCabinetData) {
+                            JSON.parse(backup.myWhiskeyCabinetData); // validation
+                        } else {
+                            return showAlert('백업 파일에 위스키 데이터가 포함되어 있지 않습니다.');
+                        }
+                        
+                        Object.keys(backup).forEach(key => {
+                            if (backup[key] !== null) {
+                                localStorage.setItem(key, backup[key]);
+                            }
+                        });
+                        
+                        playMarioSound('levelup');
+                        showAlert('모든 데이터 복구가 완료되었습니다! 화면이 곧 새로고침됩니다.');
+                        setTimeout(() => location.reload(), 1500);
+                    } catch (error) {
+                        console.error("JSON Import Error:", error);
+                        showAlert('백업 파일 읽기 또는 데이터 분석 중 오류가 발생했습니다.');
+                    }
+                };
+                reader.readAsText(file);
             };
 
             const handleFileExport = () => {
@@ -1948,6 +2044,13 @@
                             >
                                 <SearchIcon size={14} />
                             </button>
+                            <button 
+                                onClick={() => { setSettingsModal(true); playMarioSound('coin'); }}
+                                className="px-2.5 py-1.5 bg-gray-800/80 hover:bg-gray-700 text-gray-300 rounded-lg shadow text-[10px] font-semibold flex items-center gap-1 border border-gray-600 transition-colors"
+                                title="설정 및 데이터 관리"
+                            >
+                                ⚙️ <span className="hidden sm:inline">설정</span>
+                            </button>
                         </div>
                     </nav>
 
@@ -2348,6 +2451,89 @@
                                 </div>
                                 <textarea className={`flex-1 bg-gray-800 text-amber-50 border border-gray-600 rounded-lg p-4 focus:border-amber-500 resize-none leading-relaxed transition-opacity ${reviewModal.isGenerating ? 'opacity-50' : 'opacity-100'}`} value={reviewModal.text} onChange={(e) => setReviewModal({ ...reviewModal, text: e.target.value })} autoFocus placeholder="자신만의 시음기를 자유롭게 기록해보세요." disabled={reviewModal.isGenerating} />
                                 <div className="flex justify-end gap-3 mt-4"><button onClick={() => setReviewModal({ isOpen: false, whiskeyId: null, text: '', isGenerating: false })} className="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg disabled:opacity-50" disabled={reviewModal.isGenerating}>취소</button><button onClick={handleSaveReview} className="px-4 py-2 bg-amber-600 text-white rounded-lg font-medium disabled:opacity-50" disabled={reviewModal.isGenerating}>저장</button></div>
+                            </div>
+                        </div>
+                    )}
+                    {/* 데이터 관리 및 설정 모달 */}
+                    {settingsModal && (
+                        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-md px-4">
+                            <div className="bg-gray-900 border border-amber-600/50 p-6 rounded-2xl shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-200">
+                                <h3 className="text-xl font-bold text-amber-50 mb-4 flex items-center gap-2 border-b border-gray-800 pb-3">
+                                    ⚙️ 데이터 관리 및 설정
+                                </h3>
+                                
+                                <div className="space-y-6 my-4">
+                                    {/* JSON 백업/복구 섹션 */}
+                                    <div className="bg-gray-950/50 p-4 rounded-xl border border-gray-800">
+                                        <h4 className="text-sm font-bold text-amber-400 mb-2 flex items-center gap-1.5">
+                                            📄 JSON 백업 및 복구
+                                        </h4>
+                                        <p className="text-xs text-gray-400 mb-3 leading-relaxed">
+                                            전체 데이터(이미지, 필터, 위스키 상태 등)를 고스란히 복사하여 백업하거나 다른 기기로 안전하게 옮길 수 있습니다.
+                                        </p>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button 
+                                                onClick={handleJsonExport}
+                                                className="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1"
+                                            >
+                                                📥 내보내기 (JSON)
+                                            </button>
+                                            <button 
+                                                onClick={() => jsonInputRef.current.click()}
+                                                className="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold rounded-lg transition-colors border border-gray-700 flex items-center justify-center gap-1"
+                                            >
+                                                📤 가져오기 (JSON)
+                                            </button>
+                                            <input 
+                                                type="file" 
+                                                ref={jsonInputRef} 
+                                                onChange={handleJsonImport} 
+                                                accept=".json" 
+                                                className="hidden" 
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Excel 백업/복구 섹션 */}
+                                    <div className="bg-gray-950/50 p-4 rounded-xl border border-gray-800">
+                                        <h4 className="text-sm font-bold text-amber-400 mb-2 flex items-center gap-1.5">
+                                            📊 Excel 백업 및 불러오기
+                                        </h4>
+                                        <p className="text-xs text-gray-400 mb-3 leading-relaxed">
+                                            이름, 카테고리, 가격, 구매처, 풍미 요소 등의 주요 위스키 텍스트 데이터를 엑셀(Excel) 스프레드시트로 내보내거나 가져옵니다.
+                                        </p>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button 
+                                                onClick={handleFileExport}
+                                                className="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1"
+                                            >
+                                                📥 내보내기 (Excel)
+                                            </button>
+                                            <button 
+                                                onClick={() => fileInputRef.current.click()}
+                                                className="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold rounded-lg transition-colors border border-gray-700 flex items-center justify-center gap-1"
+                                            >
+                                                📤 가져오기 (Excel)
+                                            </button>
+                                            <input 
+                                                type="file" 
+                                                ref={fileInputRef} 
+                                                onChange={handleFileUpload} 
+                                                accept=".xlsx, .xls, .csv" 
+                                                className="hidden" 
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end gap-3 mt-6 pt-3 border-t border-gray-800">
+                                    <button 
+                                        onClick={() => { setSettingsModal(false); playMarioSound('coin'); }} 
+                                        className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold rounded-lg transition-colors border border-gray-700"
+                                    >
+                                        닫기
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}
