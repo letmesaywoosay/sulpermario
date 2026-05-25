@@ -2265,22 +2265,7 @@
                         </div>
                     </nav>
 
-                    <header className="w-full bg-[#120a07] border-b border-amber-900/10 flex justify-center shadow-inner relative group min-h-[40px]">
-                        {bannerImage ? (
-                            <React.Fragment>
-                                <img src={bannerImage} alt="메인 배너" className="w-full max-w-5xl h-auto object-contain opacity-95 transition-opacity" />
-                                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity gap-3">
-                                    <button onClick={() => bannerInputRef.current.click()} className="px-5 py-2.5 bg-gray-800 text-white rounded-lg shadow-lg hover:bg-gray-700 text-sm font-semibold flex items-center gap-2 transition-colors"><ImageIcon size={18}/> 변경</button>
-                                    <button onClick={handleRemoveBanner} className="px-5 py-2.5 bg-red-900/80 text-white rounded-lg shadow-lg hover:bg-red-800 text-sm font-semibold flex items-center gap-2 transition-colors"><Trash2 size={18}/> 삭제</button>
-                                </div>
-                            </React.Fragment>
-                        ) : (
-                            <div className="flex items-center justify-center w-full max-w-5xl h-20 border border-dashed border-gray-800 m-2 rounded-xl hover:border-amber-500 cursor-pointer transition-colors bg-gray-900/30" onClick={() => bannerInputRef.current.click()}>
-                                <span className="text-gray-500 text-[10px] sm:text-xs font-medium flex items-center gap-1.5"><ImageIcon size={16}/> 배너 등록 (선택사항)</span>
-                            </div>
-                        )}
-                        <input type="file" accept="image/*" ref={bannerInputRef} className="hidden" onChange={handleBannerUpload} />
-                    </header>
+
 
                     <main className="max-w-[1500px] mx-auto px-4 py-8 relative">
                         {renderMarioDashboard()}
