@@ -864,8 +864,13 @@
                 
                 setIsSearchingImage(true);
                 
-                const prompt = `당신은 위스키 수집가를 돕는 이미지 탐색기입니다. 구글 검색을 사용하여 다음 위스키 제품의 대표적인 공식 병 이미지(직접 이미지 링크 주소, 예: https://.../macallan.jpg, .png, .webp 등)를 1개 찾아서 그 이미지 URL 한 줄만 반환해 주세요. 다른 설명이나 텍스트, 마크다운 백틱은 절대로 포함하지 마세요.
-                - 위스키 이름: ${tileEditForm.name}`;
+                const prompt = `당신은 위스키 소믈리에이자 이미지 탐색기입니다. 구글 웹 검색을 수행하여 다음 위스키의 병 모양이 잘 드러나는 실제 이미지 절대 URL(예: https://.../image.png, .jpg, .webp 등 직접 이미지 파일 주소)을 찾아내어 그 URL만 반환해주세요.
+                
+                조건:
+                1. 이미지 파일로 직접 끝나는 링크(jpg, png, webp 등)여야 브라우저에 표시할 수 있습니다. 일반 웹페이지 링크는 안 됩니다.
+                2. 인사말, 마크다운 백틱, 설명 등 다른 텍스트는 절대 포함하지 말고 오직 찾은 URL 하나만 출력하세요.
+                
+                위스키 이름: ${tileEditForm.name}`;
                 
                 try {
                     const localKey = localStorage.getItem('gemini_api_key') || '';
@@ -885,10 +890,15 @@
                         imageUrl = await generateGeminiContent(fallbackPrompt, localKey, false);
                     }
                     
-                    const cleanUrl = imageUrl.trim().replace(/^`+|`+$/g, '').trim();
-                    if (!cleanUrl.startsWith('http')) {
-                        throw new Error('Invalid URL format');
+                    // 정규식을 사용해 응답 텍스트 전체에서 http/https 시작 주소 부분만 정밀 추출
+                    const urlMatch = imageUrl.match(/https?:\/\/[^\s"'`<>]+/i);
+                    if (!urlMatch) {
+                        throw new Error('No valid URL found in the response');
                     }
+                    
+                    let cleanUrl = urlMatch[0];
+                    // 마크다운 문법이나 문장 끝 구두점(), [], ., ,) 등을 정교하게 제거
+                    cleanUrl = cleanUrl.replace(/[)\].,]+$/, '').trim();
                     
                     setTileEditForm(prev => ({
                         ...prev,
