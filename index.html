@@ -668,6 +668,7 @@
             
             // 로컬용 API 키 입력 모달 상태
             const [apiKeyModal, setApiKeyModal] = useState({ isOpen: false, keyInput: '' });
+            const [isSearchingImage, setIsSearchingImage] = useState(false);
 
             const [storeManageModal, setStoreManageModal] = useState(false);
             const [newStoreInput, setNewStoreInput] = useState('');
@@ -852,6 +853,58 @@
                         showAlert('AI 시음기 생성에 실패했습니다. 잠시 후 다시 시도해주세요.');
                     }
                     setReviewModal(prev => ({ ...prev, isGenerating: false }));
+                }
+            };
+
+            // ✨ AI 구글 이미지 검색 및 등록 기능
+            const handleSearchWhiskeyImage = async () => {
+                if (!tileEditForm || !tileEditForm.name || !tileEditForm.name.trim()) {
+                    return showAlert('위스키 이름을 먼저 입력해주세요!');
+                }
+                
+                setIsSearchingImage(true);
+                
+                const prompt = `당신은 위스키 수집가를 돕는 이미지 탐색기입니다. 구글 검색을 사용하여 다음 위스키 제품의 대표적인 공식 병 이미지(직접 이미지 링크 주소, 예: https://.../macallan.jpg, .png, .webp 등)를 1개 찾아서 그 이미지 URL 한 줄만 반환해 주세요. 다른 설명이나 텍스트, 마크다운 백틱은 절대로 포함하지 마세요.
+                - 위스키 이름: ${tileEditForm.name}`;
+                
+                try {
+                    const localKey = localStorage.getItem('gemini_api_key') || '';
+                    let imageUrl;
+                    
+                    try {
+                        // 1차 시도: 구글 검색 그라운딩 활성화
+                        console.log("Searching Google for whiskey image...");
+                        imageUrl = await generateGeminiContent(prompt, localKey, true);
+                    } catch (searchError) {
+                        console.warn("Google Search Grounding failed for image search, falling back to base model...", searchError);
+                        if (searchError.message === "API_KEY_MISSING" || searchError.message.includes("403")) {
+                            throw searchError;
+                        }
+                        // 2차 시도: 실시간 검색 비활성화 상태에서 추정
+                        const fallbackPrompt = prompt + "\n(참고: 실시간 인터넷 검색 기능이 거부되었습니다. 위키미디어(Wikimedia) 등 공개 도메인에서 해당 위스키 이미지의 실제 절대 URL을 추정하여 반환해주세요.)";
+                        imageUrl = await generateGeminiContent(fallbackPrompt, localKey, false);
+                    }
+                    
+                    const cleanUrl = imageUrl.trim().replace(/^`+|`+$/g, '').trim();
+                    if (!cleanUrl.startsWith('http')) {
+                        throw new Error('Invalid URL format');
+                    }
+                    
+                    setTileEditForm(prev => ({
+                        ...prev,
+                        image: cleanUrl
+                    }));
+                    playMarioSound('levelup');
+                    showAlert('구글 이미지 검색을 통해 사진을 성공적으로 등록했습니다!');
+                } catch (error) {
+                    console.error("AI Image Search Error:", error);
+                    if (error.message === "API_KEY_MISSING" || error.message.includes("400") || error.message.includes("403")) {
+                        setApiKeyModal({ isOpen: true, keyInput: localStorage.getItem('gemini_api_key') || '' });
+                    } else {
+                        showAlert('구글 이미지 검색에 실패했습니다. 올바른 위스키 이름을 확인하시거나 직접 사진을 등록해주세요.');
+                    }
+                } finally {
+                    setIsSearchingImage(false);
                 }
             };
 
@@ -1970,6 +2023,18 @@
                                             <span className="text-white text-[10px] font-bold">이미지 변경</span>
                                         </div>
                                         <input type="file" accept="image/*" className="hidden" ref={tileImageRef} onChange={handleTileImageUpload} />
+                                    </div>
+                                    
+                                    <div className="mt-2.5">
+                                        <button 
+                                            onClick={handleSearchWhiskeyImage}
+                                            disabled={isSearchingImage}
+                                            type="button"
+                                            className="w-full py-2.5 bg-purple-900/40 hover:bg-purple-900/60 disabled:opacity-50 text-purple-200 border border-purple-700/40 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                                        >
+                                            <Sparkles size={13} className={isSearchingImage ? "animate-spin" : "text-purple-400"} />
+                                            {isSearchingImage ? '구글 검색 중...' : '🔍 구글 이미지 자동 등록'}
+                                        </button>
                                     </div>
                                     
                                     {/* Flavor Radar Chart */}
